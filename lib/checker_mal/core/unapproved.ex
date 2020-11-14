@@ -63,7 +63,7 @@ defmodule CheckerMal.Core.Unapproved.Utils do
     now = DateTime.utc_now()
 
     expire_seconds =
-      div(Application.get_env(:checker_mal, :unapproved_page_expire_time, :timer.hours(1)), 1000)
+      div(Application.get_env(:checker_mal, :unapproved_page_expire_time, :timer.hours(3)), 1000)
 
     cond do
       not Map.has_key?(state, "at") ->
@@ -119,7 +119,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
 
     %{
       "all_anime" => table_to_ids(anime),
-      "all_manga" => table_to_ids(manga),
+      "all_manga" => table_to_ids(manga)
     }
   end
 

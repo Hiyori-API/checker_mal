@@ -25,6 +25,7 @@ defmodule CheckerMal.Core.Index do
   alias CheckerMal.Core.Parser
   alias CheckerMal.Core.FeedItem
   alias CheckerMal.Core.Utils
+  alias CheckerMal.Core.Unapproved.Wrapper
   require Logger
 
   @doc """
@@ -59,15 +60,16 @@ defmodule CheckerMal.Core.Index do
 
   # base case
   def add_from_page(_, _, _, _, new_structs, :page_range, till_page, cur_page)
-      when cur_page > till_page do
-    new_structs
-  end
+      when cur_page > till_page,
+      do: new_structs
 
   # :testing atom is used while testing, returns once new_structs have at least one item, typically
   # after one recurse
-  def add_from_page(_, _, _, _, new_structs, :testing, _, _) when length(new_structs) > 0 do
-    new_structs
-  end
+  def add_from_page(_, _, _, _, new_structs, :testing, _, _) when length(new_structs) > 0,
+    do: new_structs
+
+  # base case for unapproved items
+  def add_from_page(_, _, _, _, new_structs, :unapproved, true, _), do: new_structs
 
   # old_items: the MapSet of items from find_new
   # sorted_items: a sorted list of old_items
@@ -177,8 +179,14 @@ defmodule CheckerMal.Core.Index do
               new_till_page
 
             :unapproved ->
-              # TODO: test if this min_id_on_page is less than the last unapproved ID
-              cur_page + 1
+              # this returns a bool, not an integer. the bool is matched in the unapproved base case pattern above
+              case type do
+                :anime ->
+                  min_id_on_page < Wrapper.get_last_anime_id()
+
+                :manga ->
+                  min_id_on_page < Wrapper.get_last_manga_id()
+              end
 
             :infinite ->
               cur_page + 1
@@ -192,8 +200,8 @@ defmodule CheckerMal.Core.Index do
         # union the old items with new ones found on this page
         #
         # since lists are O(n), the sorted_items |> drop_while
-        # is just so this doesnt scale badly with thousands of entries
-        # doesn't have to be exact
+        # is just so this doesnt scale badly with thousands of entries;
+        # it doesn't have to be exact
         add_from_page(
           type,
           rating,

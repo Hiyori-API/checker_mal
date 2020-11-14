@@ -19,8 +19,8 @@ defmodule CheckerMal.Core.Scrape do
         call_func
 
       {:error, wait_seconds} ->
-        # add a 100ms buffer so when wait_seconds == 0 (less than a second away from rate limit)
-        # were not sending a bunch of messages back and forth to the genserver
+        # add a 100ms buffer so when wait_seconds == 0 (less than a second away from rate being able to be used)
+        # so were not sending a bunch of messages back and forth to the genserver
         :timer.sleep(:timer.seconds(wait_seconds) + 100)
         wait_for_rate_limit()
     end
@@ -28,13 +28,17 @@ defmodule CheckerMal.Core.Scrape do
 
   def rated_http_get(url, headers \\ [], options \\ [])
       when is_bitstring(url) and is_list(headers) and is_list(options) do
-    # call the function to update when this rate limit was last used
-    wait_for_rate_limit().()
+    use_rate_limit = wait_for_rate_limit()
     # set recv_timeout
     # if HTTP error occurs, wait/sleep and recurse
-    rated_http_recurse(fn ->
-      HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.seconds(30)))
-    end)
+    http_resp =
+      rated_http_recurse(fn ->
+        HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.seconds(30)))
+      end)
+
+    # call the function to update when this rate limit was last used
+    use_rate_limit.()
+    http_resp
   end
 
   # times: number of times this request has already been tried

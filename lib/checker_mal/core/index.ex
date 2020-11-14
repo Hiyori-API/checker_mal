@@ -37,15 +37,15 @@ defmodule CheckerMal.Core.Index do
 
   old_items (the MapSet) should only have the items for this rating and type
 
-  see below for type/rating
+  # type: :anime or :manga
+  # rating: :sfw or :nsfw
 
   stop_strategy is :page_range, :unapproved, or :infinite
   :page_range => request a certain amount of pages, extend if items are found
   :unapproved => request till we've requested all unapproved items
   :infinite => request all items
   """
-  def find_new(old_items, type, rating, no_of_pages)
-      when is_atom(type) and is_atom(rating) and is_integer(no_of_pages) do
+  def find_new(old_items, type, rating, no_of_pages) when is_integer(no_of_pages) do
     add_from_page(
       type,
       rating,
@@ -54,6 +54,34 @@ defmodule CheckerMal.Core.Index do
       [],
       :page_range,
       no_of_pages,
+      1
+    )
+  end
+
+  # continue checking pages till we pass the last unapproved item
+  def find_new(old_items, type, rating, :unapproved) do
+    add_from_page(
+      type,
+      rating,
+      old_items,
+      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
+      [],
+      :unapproved,
+      false,
+      1
+    )
+  end
+
+  # continue checking pages till we check all pages
+  def find_new(old_items, type, rating, :infinite) do
+    add_from_page(
+      type,
+      rating,
+      old_items,
+      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
+      [],
+      :infinite,
+      2,
       1
     )
   end

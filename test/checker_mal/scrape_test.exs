@@ -8,6 +8,8 @@ defmodule CheckerMal.Core.Scrape.Test do
     end
   end
 
+  # TODO: Convert to Doctests
+
   test "anime URL base" do
     assert URL.anime_page(1) ==
              "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=0"

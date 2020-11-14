@@ -24,11 +24,9 @@ defmodule CheckerMal.Core.Parser do
     end
   end
 
-  @doc """
-  Parses a list of IDs (integers) and titles from the HTML response
-  returns a list of {integer, title}
-  """
-  def parse_page(response_text) when is_bitstring(response_text) do
+  # Parses a list of IDs (integers) and titles from the HTML response
+  # returns a list of {integer, title}
+  defp parse_page(response_text) when is_bitstring(response_text) do
     {:ok, document} = Floki.parse_document(response_text)
 
     Floki.find(document, "div#content div.js-categories-seasonal table tr")
@@ -46,7 +44,7 @@ defmodule CheckerMal.Core.Parser do
   end
 
   # return {ID, Title} from the Floki object
-  def parse_list_item(floki_list_item) do
+  defp parse_list_item(floki_list_item) do
     tds = floki_list_item |> Floki.find("td")
     pic_obj = tds |> Enum.at(0) |> Floki.find("a")
     link_obj = tds |> Enum.at(1) |> Floki.find("a strong")

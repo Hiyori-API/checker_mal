@@ -1,16 +1,14 @@
 defmodule CheckerMal.Core.Scraper do
   @moduledoc """
-  Handles parsing search pages from MAL
-
-  For reference, see the Jikan XPath selectors from here:
-  This doesnt have to parse all that information, since all we need is the MAL id from each page
-  https://github.com/jikan-me/jikan/blob/master/src/Parser/Search/AnimeSearchParser.php
+  Handles requesting/backoff for any particular endpoint
+  This specifies "MAL" as the endpoint to the rate_limit GenServer
   """
+
   require Logger
 
   # returns a function which you should call right before the API is used,
   # to update when that endpoint was last used
-  def wait_for_rate_limit() do
+  defp wait_for_rate_limit() do
     case GenServer.call(
            CheckerMal.Core.RateLimit,
            {:check_rate, "MAL", Application.get_env(:checker_mal, :mal_wait_time, 15)}
@@ -26,6 +24,9 @@ defmodule CheckerMal.Core.Scraper do
     end
   end
 
+  @doc """
+  Transparently rate limits requests to MAL
+  """
   def rated_http_get(url, headers \\ [], options \\ [])
       when is_bitstring(url) and is_list(headers) and is_list(options) do
     use_rate_limit = wait_for_rate_limit()
@@ -43,7 +44,7 @@ defmodule CheckerMal.Core.Scraper do
 
   # times: number of times this request has already been tried
   # giveup how many requests to do for this URL before giving up
-  def rated_http_recurse(req_func, times \\ 0, giveup \\ 10)
+  defp rated_http_recurse(req_func, times \\ 0, giveup \\ 10)
       when is_function(req_func) and is_integer(times) and is_integer(giveup) do
     case req_func.() do
       {:ok, %HTTPoison.Response{status_code: status, body: body_text, request_url: req_url}} ->

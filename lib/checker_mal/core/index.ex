@@ -22,7 +22,7 @@ defmodule CheckerMal.Core.Index do
   """
   def find_new(old_items, type, rating, no_of_pages)
       when is_atom(type) and is_atom(rating) and is_integer(no_of_pages) do
-    # TODO: Debug log the first few entries for each page
+    []
   end
 end
 

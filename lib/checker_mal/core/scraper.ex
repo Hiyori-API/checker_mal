@@ -45,7 +45,7 @@ defmodule CheckerMal.Core.Scraper do
   # times: number of times this request has already been tried
   # giveup how many requests to do for this URL before giving up
   defp rated_http_recurse(req_func, times \\ 0, giveup \\ 10)
-      when is_function(req_func) and is_integer(times) and is_integer(giveup) do
+       when is_function(req_func) and is_integer(times) and is_integer(giveup) do
     case req_func.() do
       {:ok, %HTTPoison.Response{status_code: status, body: body_text, request_url: req_url}} ->
         cond do

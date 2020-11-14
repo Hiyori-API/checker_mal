@@ -74,27 +74,54 @@ defmodule CheckerMal.Core.URL do
 
   defp page_helper(media_type, page_number) when is_integer(page_number) do
     show_offset = (page_number - 1) * 50
-    "https://myanimelist.net/#{media_type}.php?#{@base_query}&show=#{show_offset}"
+    if show_offset == 0 do
+      "https://myanimelist.net/#{media_type}.php?#{@base_query}"
+    else
+      "https://myanimelist.net/#{media_type}.php?#{@base_query}&show=#{show_offset}"
+    end
   end
 
+  @doc """
+    iex> CheckerMal.Core.URL.anime_page(1)
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2"
+    iex> CheckerMal.Core.URL.anime_page(2)
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=50"
+  """
   def anime_page(n) when is_integer(n) and n > 0 do
     page_helper("anime", n)
   end
 
+  @doc """
+    iex> CheckerMal.Core.URL.manga_page(1)
+    "https://myanimelist.net/manga.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2"
+  """
   def manga_page(n) when is_integer(n) and n > 0 do
     page_helper("manga", n)
   end
 
+  @doc """
+    iex> CheckerMal.Core.URL.anime_page(3) |> CheckerMal.Core.URL.sfw()
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre[]=12&gx=1"
+  """
   def sfw(base_url) do
     base_url <> "&genre[]=12&gx=1"
   end
 
+  @doc """
+    iex> CheckerMal.Core.URL.anime_page(1) |> CheckerMal.Core.URL.nsfw()
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre[]=12&gx=0"
+  """
   def nsfw(base_url) do
     base_url <> "&genre[]=12&gx=0"
   end
 
   @doc """
   Helper to build a URL, given a type, rating and a page
+
+    iex> CheckerMal.Core.URL.build_url(:anime, :sfw, 1)
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre[]=12&gx=1"
+    iex> URL.build_url(:manga, :nsfw, 3)
+    "https://myanimelist.net/manga.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre[]=12&gx=0"
   """
   def build_url(type, rating, page) when is_atom(type) and is_atom(rating) and is_integer(page) do
     base_url =

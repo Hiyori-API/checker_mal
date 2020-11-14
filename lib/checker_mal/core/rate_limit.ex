@@ -33,22 +33,28 @@ defmodule CheckerMal.Core.RateLimit do
   end
 
   # check if the last time we recfor_external_api
-  def handle_call({:check_rate, for_external_api, seconds_elapsed}, _from, state) when is_integer(seconds_elapsed) do
+  def handle_call({:check_rate, for_external_api, seconds_elapsed}, _from, state)
+      when is_integer(seconds_elapsed) do
     now = DateTime.utc_now()
 
-    approved = cond do
-      # never been used, allow usage immediately
-      Map.has_key?(state, for_external_api) == false ->
-        true
-      true ->
-        DateTime.diff(now, Map.get(state, for_external_api)) > seconds_elapsed
-    end
+    approved =
+      cond do
+        # never been used, allow usage immediately
+        Map.has_key?(state, for_external_api) == false ->
+          true
+
+        true ->
+          DateTime.diff(now, Map.get(state, for_external_api)) > seconds_elapsed
+      end
 
     if approved do
       # dont set the state here, caller should handle that using the function returned from here
-      {:reply, {:ok, fn -> GenServer.cast(CheckerMal.Core.RateLimit, {:used, for_external_api}) end}, state}
+      {:reply,
+       {:ok, fn -> GenServer.cast(CheckerMal.Core.RateLimit, {:used, for_external_api}) end},
+       state}
     else
-      {:reply, {:error, seconds_elapsed - DateTime.diff(now, Map.get(state, for_external_api))}, state}
+      {:reply, {:error, seconds_elapsed - DateTime.diff(now, Map.get(state, for_external_api))},
+       state}
     end
   end
 end

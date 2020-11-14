@@ -9,7 +9,8 @@ use Mix.Config
 
 # application specific configuration
 config :checker_mal,
-  mal_wait_time: 10,  # seconds, as an integer
+  # seconds, as an integer
+  mal_wait_time: 10,
   mal_error_wait_time: :timer.minutes(1)
 
 config :checker_mal,

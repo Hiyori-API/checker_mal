@@ -6,11 +6,12 @@ defmodule CheckerMal.Core.Scrape do
   This doesnt have to parse all that information, since all we need is the MAL id from each page
   https://github.com/jikan-me/jikan/blob/master/src/Parser/Search/AnimeSearchParser.php
   """
+  require Logger
 
   # returns a function which you should call right before the API is used,
   # to update when that endpoint was last used
   def wait_for_rate_limit() do
-    case GenServer.call(CheckerMal.RateLimit, {:check_rate, "MAL", Application.get_env(:checker_mal, :mal_wait_time, 15)}) do
+    case GenServer.call(CheckerMal.Core.RateLimit, {:check_rate, "MAL", Application.get_env(:checker_mal, :mal_wait_time, 15)}) do
       {:ok, call_func} ->
         call_func
       {:error, wait_seconds} ->
@@ -21,43 +22,40 @@ defmodule CheckerMal.Core.Scrape do
     end
   end
 
-  def request(url, headers, options) do
+  def rated_http_get(url, headers \\ [], options \\ []) when is_bitstring(url) and is_list(headers) and is_list(options) do
     wait_for_rate_limit().()  # call the function to update when this rate limit was last used
-    # call CheckerMal.Core.Crawler here to get the function
-
-  end
-end
-
-
-defmodule CheckerMal.Core.Scrape.URL do
-  # all columns, no query, ordered by MAL id, reverse
-  @base_query 'q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2'
-
-  defp page_helper(media_type, page_number) when is_integer(page_number) do
-    show_offset = (page_number - 1) * 50
-    "https://myanimelist.net/#{media_type}.php?#{@base_query}&show=#{show_offset}"
+    # set recv_timeout
+    # if HTTP error occurs, wait/sleep and recurse
+    rated_http_recurse(fn -> HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.seconds(30))) end)
   end
 
-  def anime_page(n) when is_integer(n) and n > 0 do
-    page_helper("anime", n)
+  # times: number of times this request has already been tried
+  # giveup how many requests to do for this URL before giving up
+  def rated_http_recurse(req_func, times \\ 0, giveup \\ 10) when is_function(req_func) and is_integer(times) and is_integer(giveup) do
+    case req_func.() do
+      {:ok, %HTTPoison.Response{status_code: status, body: body_text, request_url: req_url}} ->
+        cond do
+          status < 400 ->
+            {:ok, body_text}
+          true ->
+            Logger.warn("#{req_url} failed with code #{status}:")
+            handle_backoff(req_func, times, giveup, body_text)
+        end
+
+      # unrecoverable HTTP error, perhaps a timeout?
+      {:error, err} ->
+        handle_backoff(req_func, times, giveup, err)
+    end
   end
 
-  def manga_page(n) when is_integer(n) and n > 0 do
-    page_helper("manga", n)
+  defp handle_backoff(req_func, times, giveup, err) do
+    Logger.error(err)
+    if times >= giveup do
+      {:error, "Failed too many times..."}
+    else
+      :timer.sleep(Application.get_env(:checker_mal, :mal_error_wait_time, :timer.minutes(1)))
+      rated_http_recurse(req_func, times + 1, giveup)
+    end
   end
-
-  def sfw(base_url) do
-    base_url <> "&genre[]=12&gx=1"
-  end
-
-  def nsfw(base_url) do
-    base_url <> "&genre[]=12&gx=0"
-  end
-end
-
-defmodule CheckerMal.Core.Scrape.ListParser do
-  @moduledoc """
-  Takes the HTML response from a anime/manga search, extracts names and IDs from the response
-  """
 end
 

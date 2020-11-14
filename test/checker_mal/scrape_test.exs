@@ -1,6 +1,6 @@
 defmodule CheckerMal.Core.Scrape.Test do
   use ExUnit.Case
-  alias CheckerMal.Core.Scrape.URL
+  alias CheckerMal.Core.URL
 
   test "anime URL build fails" do
     assert_raise FunctionClauseError, fn ->

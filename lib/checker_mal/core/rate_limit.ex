@@ -5,10 +5,10 @@ defmodule CheckerMal.Core.RateLimit do
   Tried :ex_rated (module) but it would sometimes return early; probably meant to be used for more than one call
 
   Whenever you use an API, call:
-  GenServer.cast(CheckerMal.RateLimit, {:used, "Website"})
+  GenServer.cast(CheckerMal.Core.RateLimit, {:used, "Website"})
 
   To check if its been 5 seconds since you've last requested
-  GenServer.call(CheckerMal.RateLimit, {:check_rate, "Website", 5})
+  GenServer.call(CheckerMal.Core.RateLimit, {:check_rate, "Website", 5})
   Returns
     {:ok, <function which calls :used for this endpoint>}
   or
@@ -46,7 +46,7 @@ defmodule CheckerMal.Core.RateLimit do
 
     if approved do
       # dont set the state here, caller should handle that using the function returned from here
-      {:reply, {:ok, fn -> GenServer.cast(CheckerMal.RateLimit, {:used, for_external_api}) end}, state}
+      {:reply, {:ok, fn -> GenServer.cast(CheckerMal.Core.RateLimit, {:used, for_external_api}) end}, state}
     else
       {:reply, {:error, seconds_elapsed - DateTime.diff(now, Map.get(state, for_external_api))}, state}
     end

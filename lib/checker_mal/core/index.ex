@@ -24,6 +24,7 @@ defmodule CheckerMal.Core.Index do
 
   alias CheckerMal.Core.Parser
   alias CheckerMal.Core.FeedItem
+  alias CheckerMal.Core.Utils
   require Logger
 
   @doc """
@@ -48,7 +49,7 @@ defmodule CheckerMal.Core.Index do
       type,
       rating,
       old_items,
-      old_items |> MapSet.to_list() |> reverse_sort(),
+      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
       [],
       :page_range,
       no_of_pages,
@@ -84,7 +85,7 @@ defmodule CheckerMal.Core.Index do
     ids_on_page =
       Parser.request(type, rating, cur_page, debug: true)
       |> Enum.map(fn {id, _name} -> id end)
-      |> reverse_sort()
+      |> Utils.reverse_sort()
 
     # if there are no items on the page, exit
     # :infinite would exit here or at the bottom if length(ids_on_page) != 50,
@@ -94,7 +95,7 @@ defmodule CheckerMal.Core.Index do
     else
       # get the min/max id on page
       max_id_on_page = ids_on_page |> hd()
-      min_id_on_page = ids_on_page |> last()
+      min_id_on_page = ids_on_page |> Utils.last()
 
       # to be able to check if items have been deleted, strategy is
       # to compare the sub list of sorted_items between the max and min and
@@ -174,11 +175,14 @@ defmodule CheckerMal.Core.Index do
               end
 
               new_till_page
+
             :unapproved ->
               # TODO: test if this min_id_on_page is less than the last unapproved ID
               cur_page + 1
+
             :infinite ->
               cur_page + 1
+
             _ ->
               # unknown/:testing, use same
               till_page
@@ -203,7 +207,4 @@ defmodule CheckerMal.Core.Index do
       end
     end
   end
-
-  defp reverse_sort(enum), do: enum |> Enum.sort(fn a, b -> a > b end)
-  defp last(enum), do: enum |> Enum.take(-1) |> hd()
 end

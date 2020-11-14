@@ -11,7 +11,8 @@ use Mix.Config
 config :checker_mal,
   # seconds, as an integer
   mal_wait_time: 10,
-  mal_error_wait_time: :timer.minutes(1)
+  mal_error_wait_time: :timer.minutes(1),
+  unapproved_page_expire_time: :timer.hours(1)
 
 config :checker_mal,
   ecto_repos: [CheckerMal.Repo]

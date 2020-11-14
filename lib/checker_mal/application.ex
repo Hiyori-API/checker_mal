@@ -15,7 +15,8 @@ defmodule CheckerMal.Application do
       {Phoenix.PubSub, name: CheckerMal.PubSub},
       # Start the Endpoint (http/https)
       CheckerMalWeb.Endpoint,
-      CheckerMal.Core.RateLimit
+      CheckerMal.Core.RateLimit,
+      CheckerMal.Core.Unapproved
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

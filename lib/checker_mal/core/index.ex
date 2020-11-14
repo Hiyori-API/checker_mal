@@ -154,20 +154,35 @@ defmodule CheckerMal.Core.Index do
       if ids_on_page |> length() != 50 do
         new_structs
       else
+        # if stop_strategy is page_range,
         # if we found new IDs, if current page + some number > till_page, set new till_page
         # 'some number' increases as the page number increases
-        before_till_page = till_page
+        updated_till_page =
+          case stop_strategy do
+            :page_range ->
+              before_till_page = till_page
 
-        till_page =
-          if stop_strategy == :page_range and new_ids |> length() > 0 do
-            Enum.max([5 + div(cur_page, 5) + cur_page, till_page])
-          else
-            till_page
+              new_till_page =
+                if new_ids |> length() > 0 do
+                  Enum.max([5 + div(cur_page, 5) + cur_page, till_page])
+                else
+                  till_page
+                end
+
+              if before_till_page != new_till_page do
+                Logger.info("Extended page range from #{before_till_page} to #{new_till_page}")
+              end
+
+              new_till_page
+            :unapproved ->
+              # TODO: test if this min_id_on_page is less than the last unapproved ID
+              cur_page + 1
+            :infinite ->
+              cur_page + 1
+            _ ->
+              # unknown/:testing, use same
+              till_page
           end
-
-        if before_till_page != till_page do
-          Logger.info("Extended page range from #{before_till_page} to #{till_page}")
-        end
 
         # recurse
         # union the old items with new ones found on this page
@@ -182,7 +197,7 @@ defmodule CheckerMal.Core.Index do
           sorted_items |> Enum.drop_while(fn n -> n > min_id_on_page end),
           new_structs,
           stop_strategy,
-          till_page,
+          updated_till_page,
           cur_page + 1
         )
       end

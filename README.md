@@ -1,5 +1,7 @@
 # CheckerMal
 
+This is mostly a rewrite of [mal-id-cache](https://github.com/seanbreckenridge/mal-id-cache), with nicer concurrency/entrypoints.
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
@@ -7,7 +9,7 @@ To start your Phoenix server:
   * Install Node.js dependencies with `npm install` inside the `assets` directory
   * Start Phoenix endpoint with `mix phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Now you can visit [`localhost:4001`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 

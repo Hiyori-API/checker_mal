@@ -39,6 +39,10 @@ defmodule CheckerMal.Core.RateLimit do
 
     approved =
       cond do
+        # dont rate limit requests while testing
+        Mix.env() == :test ->
+          true
+
         # never been used, allow usage immediately
         Map.has_key?(state, for_external_api) == false ->
           true

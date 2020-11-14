@@ -45,7 +45,9 @@ defmodule CheckerMal.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:httpoison, "~> 1.7.0"}
+      {:httpoison, "~> 1.7.0"},
+      {:floki, "~> 0.29.0"},
+      {:exvcr, "~> 0.10", only: :test}
     ]
   end
 

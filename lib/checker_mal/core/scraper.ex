@@ -1,4 +1,4 @@
-defmodule CheckerMal.Core.Scrape do
+defmodule CheckerMal.Core.Scraper do
   @moduledoc """
   Handles parsing search pages from MAL
 

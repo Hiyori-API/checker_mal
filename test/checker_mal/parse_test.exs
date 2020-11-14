@@ -15,7 +15,7 @@ defmodule CheckerMal.Core.Parser.Test do
     use_cassette "test_anime_page" do
       items = Parser.request(:anime, :sfw, 1)
       assert items |> length() == 50
-      assert id_subset_same(items, [43917, 43814, 43763])
+      assert id_subset_same(items, [43_917, 43_814, 43_763])
       {_id, name} = items |> hd()
       assert name == "Viola wa Utau"
     end

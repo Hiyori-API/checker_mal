@@ -8,7 +8,7 @@ defmodule CheckerMal.Core.Index.Test do
   test "add/remove for add_from_page" do
     use_cassette "response_set" do
       # doesnt exist, should return a 'FeedItem' with :removed
-      prev_ids = [43916]
+      prev_ids = [43_916]
 
       # :testing is a special strategy, which returns after one recurse has been done
       response_set =
@@ -23,7 +23,7 @@ defmodule CheckerMal.Core.Index.Test do
 
       assert MapSet.member?(
                approved_response_set |> Enum.map(fn r -> r.mal_id end) |> MapSet.new(),
-               43917
+               43_917
              )
 
       deleted_response_set =
@@ -32,7 +32,7 @@ defmodule CheckerMal.Core.Index.Test do
       assert deleted_response_set |> MapSet.size() == 1
 
       assert MapSet.member?(deleted_response_set, %FeedItem{
-               mal_id: 43916,
+               mal_id: 43_916,
                type: :anime,
                rating: :sfw,
                action: :removed

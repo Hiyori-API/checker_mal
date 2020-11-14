@@ -9,5 +9,4 @@ defmodule CheckerMal.Core.Scrape.Test do
       URL.anime_page(0)
     end
   end
-
 end

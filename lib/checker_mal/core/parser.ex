@@ -11,7 +11,14 @@ defmodule CheckerMal.Core.Parser do
   Interface to this module, requests and parses a page from MAL
   Returns a list of {integer, title}
   """
-  def request(type, rating, page) do
+  def request(type, rating, page, options \\ []) do
+    debug = Keyword.get(options, :debug, false)
+    url = URL.build_url(type, rating, page)
+
+    if debug do
+      Logger.debug("[#{Atom.to_string(type)} #{Atom.to_string(rating)} #{page}] #{url}")
+    end
+
     case URL.build_url(type, rating, page) |> Scraper.rated_http_get() do
       {:ok, response_text} ->
         parse_page(response_text)
@@ -29,10 +36,16 @@ defmodule CheckerMal.Core.Parser do
   defp parse_page(response_text) when is_bitstring(response_text) do
     {:ok, document} = Floki.parse_document(response_text)
 
-    Floki.find(document, "div#content div.js-categories-seasonal table tr")
-    |> tl()
-    |> Enum.map(&parse_list_item(&1))
-    |> debug_first()
+    floki_rows = Floki.find(document, "div#content div.js-categories-seasonal table tr")
+
+    if floki_rows |> length() == 0 do
+      []
+    else
+      floki_rows
+      |> tl()
+      |> Enum.map(&parse_list_item(&1))
+      |> debug_first()
+    end
   end
 
   defp debug_first(parsed_trs) when is_list(parsed_trs) do
@@ -46,7 +59,9 @@ defmodule CheckerMal.Core.Parser do
   # return {ID, Title} from the Floki object
   defp parse_list_item(floki_list_item) do
     tds = floki_list_item |> Floki.find("td")
+    # extract MAL url from td that contains image link
     pic_obj = tds |> Enum.at(0) |> Floki.find("a")
+    # extract name from link td
     link_obj = tds |> Enum.at(1) |> Floki.find("a strong")
 
     {pic_obj |> Floki.attribute("href") |> hd() |> parse_id_from_mal_url(),
@@ -74,6 +89,7 @@ defmodule CheckerMal.Core.URL do
 
   defp page_helper(media_type, page_number) when is_integer(page_number) do
     show_offset = (page_number - 1) * 50
+
     if show_offset == 0 do
       "https://myanimelist.net/#{media_type}.php?#{@base_query}"
     else

@@ -14,9 +14,8 @@ defmodule CheckerMal.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: CheckerMal.PubSub},
       # Start the Endpoint (http/https)
-      CheckerMalWeb.Endpoint
-      # Start a worker by calling: CheckerMal.Worker.start_link(arg)
-      # {CheckerMal.Worker, arg}
+      CheckerMalWeb.Endpoint,
+      CheckerMal.Core.RateLimit
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

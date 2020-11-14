@@ -18,7 +18,7 @@ defmodule CheckerMalWeb.UserSocket do
   @impl true
   def connect(_params, socket, _connect_info) do
     :error
-    #{:ok, socket}
+    # {:ok, socket}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

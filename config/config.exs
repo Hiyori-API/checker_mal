@@ -7,6 +7,11 @@
 # General application configuration
 use Mix.Config
 
+# application specific configuration
+config :checker_mal,
+  mal_wait_time: 10
+
+
 config :checker_mal,
   ecto_repos: [CheckerMal.Repo]
 

@@ -7,12 +7,18 @@
 # General application configuration
 use Mix.Config
 
-# application specific configuration
+# application functionality config
 config :checker_mal,
   # seconds, as an integer
   mal_wait_time: 10,
   mal_error_wait_time: :timer.minutes(1),
-  unapproved_page_expire_time: :timer.hours(3)
+  unapproved_page_expire_time: :timer.hours(3),
+  txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
+  source_backend: :txt,
+  enabled_backends: [:txt]
+  # enabled_backends: [:txt, :mongodb]
+
+import_config "pages.exs"
 
 config :checker_mal,
   ecto_repos: [CheckerMal.Repo]

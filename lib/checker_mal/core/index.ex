@@ -18,7 +18,7 @@ defmodule CheckerMal.Core.Index do
   Checks for new anime/manga entries on MAL
 
   This module should be backend agnostic, doesnt matter if youre fetching
-  items from mongodb and sending requests back, or loading local JSON files
+  items from mongodb and sending requests back, or loading local files
   and writing back changes
   """
 

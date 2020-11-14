@@ -1,3 +1,6 @@
+# txt cache directory
+/cache/
+
 # The directory Mix will write compiled artifacts to.
 /_build/
 

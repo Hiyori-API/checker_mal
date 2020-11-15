@@ -6,6 +6,10 @@ defmodule CheckerMal.Backend.EntryPoint do
   # This should use one of the backend as the 'source' for IDs,
   # and then send the computed structs to write back to one or more backends,
   # if any structs were returned from the update process
+  #
+  # Any backend receives 'added' and 'removed' as part of the
+  # response structs for any updates, so changes made while waiting for
+  # results are kept, they won't get overwritten
 
   def read(type) do
     # TODO: do, for each rating

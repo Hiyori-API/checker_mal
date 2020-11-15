@@ -5,6 +5,7 @@ defmodule CheckerMal.Backend.Txt do
   require Logger
 
   def read(type, rating), do: read_or_empty(type, rating)
+
   def write_changes(type, rating, new_structs) do
     # TODO: implement write changes
   end
@@ -22,9 +23,11 @@ defmodule CheckerMal.Backend.Txt do
     else
       Logger.warning("Using empty cache for #{type} #{rating}")
       dirname = Path.dirname(path)
+
       if not File.exists?(dirname) do
         File.mkdir!(dirname)
       end
+
       File.touch!(path)
       []
     end

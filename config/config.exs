@@ -16,7 +16,8 @@ config :checker_mal,
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
   source_backend: :txt,
   enabled_backends: [:txt]
-  # enabled_backends: [:txt, :mongodb]
+
+# enabled_backends: [:txt, :mongodb]
 
 import_config "pages.exs"
 

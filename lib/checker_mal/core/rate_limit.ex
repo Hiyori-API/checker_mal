@@ -26,7 +26,7 @@ defmodule CheckerMal.Core.RateLimit do
   end
 
   # for_external_api is some string to define the interaction, i.e. the site this rate limit is for
-  # this should be recieved whenever a request is sent to the 'for_external_api' API
+  # this should be received whenever a request is sent to the 'for_external_api' API
   def handle_cast({:used, for_external_api}, state) do
     state = Map.put(state, for_external_api, DateTime.utc_now())
     {:noreply, state}

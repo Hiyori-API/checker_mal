@@ -12,10 +12,14 @@ defmodule CheckerMal.Core.Scheduler do
   alias CheckerMal.PageState
   alias CheckerMal.PageState.PageStateData
 
+  # TODO: implement GenServer loop
+  # TODO: implement handle_cast which receives a page number from index
+  # TODO: implement check for expired
+
   def read_state() do
     state_data =
       PageState.list_pagestate()
-      |> Enum.map(fn %CheckerMal.PageState.PageStateData{
+      |> Enum.map(fn %PageStateData{
                        period: period,
                        timeframe: timeframe,
                        type: type,
@@ -59,7 +63,6 @@ defmodule CheckerMal.Core.Scheduler do
     end)
   end
 
-  # TODO: implement handle_cast which receives a page number from index
   @doc """
   After something finishes requesting a certain number of pages,
   it sends either the page count or the atom for which it requested,
@@ -70,6 +73,14 @@ defmodule CheckerMal.Core.Scheduler do
   """
   def finished_requesting(page_count, stop_strategy, type) when is_integer(page_count) do
     Config.find_smaller_in_range(page_count, stop_strategy, type)
+    |> Enum.map(fn timeframe ->
+      update_query =
+        from pd in PageStateData,
+          where: pd.type == ^Config.stringify_key(type) and pd.timeframe == ^timeframe,
+          update: [set: [updated_at: ^NaiveDateTime.utc_now()]]
+
+      CheckerMal.Repo.update_all(update_query, [])
+    end)
   end
 end
 

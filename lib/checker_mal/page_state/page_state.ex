@@ -59,12 +59,16 @@ defmodule CheckerMal.PageState do
   Returns T/F based on whether or not a timeframe and type is already in the database
   """
   def has_pagestate?(timeframe, type) when is_bitstring(timeframe) and is_bitstring(type) do
-    query = from c in PageStateData,
-      where: c.timeframe == ^timeframe and c.type == ^type,
-      select: c.id
+    query =
+      from c in PageStateData,
+        where: c.timeframe == ^timeframe and c.type == ^type,
+        select: c.id
+
     Repo.all(query) |> length() > 0
   end
-  def has_pagestate?(timeframe, type) when is_atom(type), do: has_pagestate?(timeframe, Atom.to_string(type))
+
+  def has_pagestate?(timeframe, type) when is_atom(type),
+    do: has_pagestate?(timeframe, Atom.to_string(type))
 
   def insert_pagestate_if_doesnt_exist(timeframe, period, type) when is_atom(type),
     do: insert_pagestate_if_doesnt_exist(timeframe, period, Atom.to_string(type))
@@ -79,7 +83,6 @@ defmodule CheckerMal.PageState do
       {:ok, :already_existed}
     end
   end
-
 
   @doc """
   Updates a page_state_data.

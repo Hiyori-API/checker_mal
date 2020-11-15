@@ -30,7 +30,9 @@ defmodule CheckerMal.PageStateTest do
     end
 
     test "create_page_state_data/1 with valid data creates a page_state_data" do
-      assert {:ok, %PageStateData{} = page_state_data} = PageState.create_page_state_data(@valid_attrs)
+      assert {:ok, %PageStateData{} = page_state_data} =
+               PageState.create_page_state_data(@valid_attrs)
+
       assert page_state_data.period == 42
       assert page_state_data.timeframe == "some timeframe"
       assert page_state_data.type == "some type"
@@ -42,7 +44,10 @@ defmodule CheckerMal.PageStateTest do
 
     test "update_page_state_data/2 with valid data updates the page_state_data" do
       page_state_data = page_state_data_fixture()
-      assert {:ok, %PageStateData{} = page_state_data} = PageState.update_page_state_data(page_state_data, @update_attrs)
+
+      assert {:ok, %PageStateData{} = page_state_data} =
+               PageState.update_page_state_data(page_state_data, @update_attrs)
+
       assert page_state_data.period == 43
       assert page_state_data.timeframe == "some updated timeframe"
       assert page_state_data.type == "some updated type"
@@ -50,14 +55,20 @@ defmodule CheckerMal.PageStateTest do
 
     test "update_page_state_data/2 with invalid data returns error changeset" do
       page_state_data = page_state_data_fixture()
-      assert {:error, %Ecto.Changeset{}} = PageState.update_page_state_data(page_state_data, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               PageState.update_page_state_data(page_state_data, @invalid_attrs)
+
       assert page_state_data == PageState.get_page_state_data!(page_state_data.id)
     end
 
     test "delete_page_state_data/1 deletes the page_state_data" do
       page_state_data = page_state_data_fixture()
       assert {:ok, %PageStateData{}} = PageState.delete_page_state_data(page_state_data)
-      assert_raise Ecto.NoResultsError, fn -> PageState.get_page_state_data!(page_state_data.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        PageState.get_page_state_data!(page_state_data.id)
+      end
     end
 
     test "change_page_state_data/1 returns a page_state_data changeset" do

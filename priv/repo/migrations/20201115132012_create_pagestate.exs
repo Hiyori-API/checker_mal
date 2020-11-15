@@ -9,6 +9,5 @@ defmodule CheckerMal.Repo.Migrations.CreatePagestate do
 
       timestamps()
     end
-
   end
 end

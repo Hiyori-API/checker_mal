@@ -8,13 +8,40 @@ defmodule CheckerMal.Core.Scheduler do
   @type_keys [:anime, :manga]
 
   import Ecto.Query, warn: false
+  alias CheckerMal.Core.Utils
   alias CheckerMal.Core.Scheduler.Config
   alias CheckerMal.PageState
   alias CheckerMal.PageState.PageStateData
 
   # TODO: implement GenServer loop
   # TODO: implement handle_cast which receives a page number from index
-  # TODO: implement check for expired
+
+  @doc """
+  Checks if any page ranges have expired. If any have, for both @type_keys
+  returns the page which has the highest page range value, that way we're
+  not duplicating work
+
+  Returns 0, 1, or 2 jobs, if any have expired
+  """
+  def check_expired(state, now \\ NaiveDateTime.utc_now()) do
+    @type_keys
+    |> Enum.map(fn type ->
+      expired_for_type =
+        state[type]
+        |> Enum.filter(fn {_timeframe, period, last_run} ->
+          NaiveDateTime.diff(now, last_run) > period
+        end)
+        |> Enum.map(fn {timeframe, _, _} -> timeframe end)
+        |> Config.sort_config(type)
+
+      if length(expired_for_type) > 0 do
+        {type, Utils.last(expired_for_type)}
+      else
+        {type, nil}
+      end
+    end)
+    |> Enum.reject(fn {_, dat} -> is_nil(dat) end)
+  end
 
   def read_state() do
     state_data =

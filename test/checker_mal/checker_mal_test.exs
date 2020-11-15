@@ -3,4 +3,5 @@ defmodule CheckerMal.Core.Test do
 
   doctest CheckerMal.Core.Parser
   doctest CheckerMal.Core.Scheduler.Config
+
 end

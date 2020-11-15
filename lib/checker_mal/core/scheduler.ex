@@ -12,33 +12,34 @@ defmodule CheckerMal.Core.Scheduler do
   alias CheckerMal.PageState
   alias CheckerMal.PageState.PageStateData
 
-  @doc """
-  After something finishes requesting a certain number of pages,
-  it sends either the page count or the atom for which it requested,
-  a particular page range for back to this GenServer
-
-  Mark any items which are that or less than this page range as 'done' now,
-  if something extended past what it should have checked
-  """
-  def finished_requesting(page_count, stop_strategy, type) when is_integer(page_count) do
-    Config.find_smaller_in_range(page_count, stop_strategy, type)
-  end
-
   def read_state() do
-    # TODO: could optimize and read all in a single query instead of making ~10 queries, but this doesnt have to scale
+    state_data =
+      PageState.list_pagestate()
+      |> Enum.map(fn %CheckerMal.PageState.PageStateData{
+                       period: period,
+                       timeframe: timeframe,
+                       type: type,
+                       updated_at: last_ran
+                     } ->
+        {type, {timeframe, period, last_ran}}
+      end)
+      |> Enum.group_by(fn {type, _} -> type end, fn {_, data} -> data end)
+
     @type_keys
     |> Enum.map(fn type ->
-      last_requested_data = Config.read_config(type)
-      |> Map.to_list
-      |> Enum.map(fn {timeframe, period} ->
-        updated_at = CheckerMal.Repo.one(
-          from c in PageStateData,
-          where: c.type == ^Config.stringify_key(type) and c.timeframe == ^timeframe,
-          select: c.updated_at)
-        {timeframe, period, updated_at}
-      end)
+      stype = Config.stringify_key(type)
+      key_list = state_data[stype]
 
-      {type, last_requested_data}
+      valid_state =
+        Config.read_config(type)
+        |> Map.to_list()
+        |> Enum.map(fn {timeframe, period} ->
+          Enum.find(key_list, :error_no_state_match, fn {ktimeframe, kperiod, _last_ran} ->
+            kperiod == period and ktimeframe == timeframe
+          end)
+        end)
+
+      {type, valid_state}
     end)
     |> Enum.into(Map.new())
   end
@@ -51,7 +52,7 @@ defmodule CheckerMal.Core.Scheduler do
     @type_keys
     |> Enum.each(fn type ->
       Config.read_config(type)
-      |> Map.to_list
+      |> Map.to_list()
       |> Enum.map(fn {timeframe, period} ->
         PageState.insert_pagestate_if_doesnt_exist(timeframe, period, type)
       end)
@@ -59,8 +60,17 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   # TODO: implement handle_cast which receives a page number from index
-  # if a page range exceeded past what it was supposed to check, it can
-  # mark other page ranges as newly checked as well
+  @doc """
+  After something finishes requesting a certain number of pages,
+  it sends either the page count or the atom for which it requested,
+  a particular page range for back to this GenServer
+
+  Mark any items which are that or less than this page range as 'done' now,
+  if something extended past what it should have checked
+  """
+  def finished_requesting(page_count, stop_strategy, type) when is_integer(page_count) do
+    Config.find_smaller_in_range(page_count, stop_strategy, type)
+  end
 end
 
 defmodule CheckerMal.Core.Scheduler.Config do
@@ -162,7 +172,6 @@ defmodule CheckerMal.Core.Scheduler.Config do
 
   defp stringify_config([{page_count, period} | rest], map),
     do: stringify_config(rest, Map.put(map, stringify_key(page_count), period))
-
 
   def page_order(type) do
     Application.get_env(:checker_mal, page_atom(type))

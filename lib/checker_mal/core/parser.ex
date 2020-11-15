@@ -16,7 +16,7 @@ defmodule CheckerMal.Core.Parser do
     url = URL.build_url(type, rating, page)
 
     if debug do
-      Logger.debug("[#{Atom.to_string(type)} #{Atom.to_string(rating)} #{page}] #{url}")
+      Logger.info("[#{Atom.to_string(type)} #{Atom.to_string(rating)} #{page}] #{url}")
     end
 
     case URL.build_url(type, rating, page) |> Scraper.rated_http_get() do

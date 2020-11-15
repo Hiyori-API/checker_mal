@@ -30,7 +30,7 @@ defmodule CheckerMal.Core.Scheduler.Test do
     assert expired == [anime: "40", manga: "unapproved"]
   end
 
-    test 'expiry returns nothing' do
+  test 'expiry returns nothing' do
     expired =
       Scheduler.check_expired(
         %{

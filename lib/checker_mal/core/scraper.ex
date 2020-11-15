@@ -24,6 +24,8 @@ defmodule CheckerMal.Core.Scraper do
     end
   end
 
+  # note: the only time this might fail as a rate limit would be if MAL is down (which would cause
+  # minute long sleeps in the rated_http_recurse function anyways, or when unapproved is being requested
   @doc """
   Transparently rate limits requests to MAL
   """

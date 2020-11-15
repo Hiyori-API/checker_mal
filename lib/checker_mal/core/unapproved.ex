@@ -86,7 +86,7 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
   defp get_handler(genserver_atom) when is_atom(genserver_atom), do: get_handler({genserver_atom})
 
   defp get_handler(genserver_data),
-    do: GenServer.call(CheckerMal.Core.Unapproved, genserver_data, :timer.minutes(10))
+    do: GenServer.call(CheckerMal.Core.Unapproved, genserver_data, :timer.hours(1))
 
   def get_all_anime(), do: get_handler(:get_all_anime)
   def get_all_manga(), do: get_handler(:get_all_manga)

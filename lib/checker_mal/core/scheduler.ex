@@ -3,18 +3,105 @@ defmodule CheckerMal.Core.Scheduler do
   Periodically checks the config/postgres db
   Based on when those page ranges were last run,
   decides when to request how many pages from MAL
-  """
 
-  @type_keys [:anime, :manga]
+  all requests to update page ranges should come through
+  here, since this implements a locking mechanism to
+  prevent muliple jobs from running concurrently
+
+  State includes:
+    anime: [anime page data (from db)]
+    manga: [manga... (same as anime)]
+    lock: sleeplock pid
+
+  locked is set in maintenance if some task is starting, else
+  (for future usage), if a request to check a page was received
+  from somewhere else
+
+  finished_requesting is called by the called process, to mark
+  how many pages were checked. That sets the lock to nil
+
+  any other requests made while there this is locked will wait in
+  an aquire. up to the callee on how to handle retrying trying to
+  do that in a handle_call and GenServer timeout occurs
+  """
 
   import Ecto.Query, warn: false
   alias CheckerMal.Core.Utils
   alias CheckerMal.Core.Scheduler.Config
+  alias CheckerMal.Core.Index
   alias CheckerMal.PageState
   alias CheckerMal.PageState.PageStateData
 
-  # TODO: implement GenServer loop
-  # TODO: implement handle_cast which receives a page number from index
+  require Logger
+  use GenServer
+
+  @type_keys [:anime, :manga]
+  @loop_period Application.get_env(:checker_mal, :scheduler_loop_time, :timer.minutes(5))
+
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+  end
+
+  def init(init_state \\ %{}) do
+    # should never be more than one of these, create spinlock ref
+    {:ok, sleeplock_ref} = :sleeplocks.new(1)
+    state = Map.merge(init_state, %{lock: sleeplock_ref})
+    # create any missing page ranges, if needed
+    init_db()
+    # so this doesn't stop initial startup process
+    schedule_check(:timer.seconds(10))
+    {:ok, Map.merge(state, read_state())}
+  end
+
+  def schedule_check(in_ms \\ @loop_period), do: Process.send_after(self(), :check, in_ms)
+  def handle_info(:check, state), do: {:noreply, maintenance(state)}
+
+  @doc """
+  Checks if any of the page ranges have expired, makes requests by spawning processes if any have
+  """
+  def maintenance(state) do
+    Logger.debug("Running maintenance...")
+    state = Map.merge(state, read_state())
+    expired_ranges = check_expired(state)
+    cast_pages(state, expired_ranges)
+    # this doesn't schedule check here, since if a task takes more than @loop_period
+    # that would mean lots of :check requests would attempt to aquire the lock
+    # instead, that schedule is done in finished_requesting
+    state
+  end
+
+  defp cast_pages(state, expired_ranges) do
+    if length(expired_ranges) > 0 do
+      # I think this should be fine, this is only going to care
+      # about the SFW request sending the page range back to finished_requesting
+      # otherwise, there are 11x as more SFW entries anyways, so NSFW should
+      # always be checked well enough
+      expired_ranges
+      |> Enum.each(fn {type, timeframe} ->
+        # spawn a process and run update there
+        # aquire the lock in the child process, so multiple don't run concurrently
+        # and this doesn't block the genserver waiting to aquire the lock
+        # link with child process, this genserver crashes/restarts if that crashes
+        {:ok, _task} =
+          Task.start_link(fn ->
+            :sleeplocks.acquire(state[:lock])
+
+            Index.request(
+              type,
+              timeframe,
+              fn page_count, stop_strategy, type ->
+                GenServer.call(
+                  CheckerMal.Core.Scheduler,
+                  {:finished_requesting, page_count, stop_strategy, type}
+                )
+              end
+            )
+          end)
+      end)
+    end
+
+    state
+  end
 
   @doc """
   Checks if any page ranges have expired. If any have, for both @type_keys
@@ -47,12 +134,11 @@ defmodule CheckerMal.Core.Scheduler do
     state_data =
       PageState.list_pagestate()
       |> Enum.map(fn %PageStateData{
-                       period: period,
                        timeframe: timeframe,
                        type: type,
                        updated_at: last_ran
                      } ->
-        {type, {timeframe, period, last_ran}}
+        {type, {timeframe, last_ran}}
       end)
       |> Enum.group_by(fn {type, _} -> type end, fn {_, data} -> data end)
 
@@ -61,13 +147,18 @@ defmodule CheckerMal.Core.Scheduler do
       stype = Config.stringify_key(type)
       key_list = state_data[stype]
 
+      # TODO: remove timeframe from db? its always pulled from the configuration, and
+      # it only causes more trouble having to update it in the database
       valid_state =
         Config.read_config(type)
         |> Map.to_list()
         |> Enum.map(fn {timeframe, period} ->
-          Enum.find(key_list, :error_no_state_match, fn {ktimeframe, kperiod, _last_ran} ->
-            kperiod == period and ktimeframe == timeframe
-          end)
+          {_, last_ran} =
+            Enum.find(key_list, :error_no_state_match, fn {ktimeframe, _last_ran} ->
+              ktimeframe == timeframe
+            end)
+
+          {timeframe, period, last_ran}
         end)
 
       {type, valid_state}
@@ -108,6 +199,12 @@ defmodule CheckerMal.Core.Scheduler do
 
       CheckerMal.Repo.update_all(update_query, [])
     end)
+  end
+
+  def handle_call({:finished_requesting, page_count, stop_strategy, type}, _from, state) do
+    # release the lock, anything else trying to request can now aquire
+    :sleeplocks.release(state[:lock])
+    {:reply, finished_requesting(page_count, stop_strategy, type), state}
   end
 end
 
@@ -183,6 +280,9 @@ defmodule CheckerMal.Core.Scheduler.Config do
 
   # mark everything done
   def find_smaller_in_range(_pcount, :infinite, type, _ranges), do: page_order(type)
+
+  # for other strategies (:one, perhaps :testing), nothing should be saved to the db, so return nothing
+  def find_smaller_in_range(_pcount, _stop_strategy, _type, _ranges), do: []
 
   @doc """
   iex> CheckerMal.Core.Scheduler.Config.sort_config(Enum.shuffle(CheckerMal.Core.Scheduler.Config.page_order(:anime)), :anime)

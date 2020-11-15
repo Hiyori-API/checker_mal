@@ -11,10 +11,10 @@ defmodule CheckerMal.Core.Index.Test do
       prev_ids = [43_916]
 
       # :testing is a special strategy, which returns after one recurse has been done
-      response_set =
-        MapSet.new(
-          Index.add_from_page(:anime, :sfw, MapSet.new(prev_ids), prev_ids, [], :testing, 1, 1)
-        )
+      {_reached_page, resp} =
+        Index.add_from_page(:anime, :sfw, MapSet.new(prev_ids), prev_ids, [], :testing, 1, 1)
+
+      response_set = MapSet.new(resp)
 
       approved_response_set =
         response_set |> Enum.filter(fn r -> r.action == :added end) |> MapSet.new()
@@ -33,8 +33,6 @@ defmodule CheckerMal.Core.Index.Test do
 
       assert MapSet.member?(deleted_response_set, %FeedItem{
                mal_id: 43_916,
-               type: :anime,
-               rating: :sfw,
                action: :removed
              })
     end

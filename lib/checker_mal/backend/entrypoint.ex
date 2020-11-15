@@ -1,8 +1,4 @@
 defmodule CheckerMal.Backend.EntryPoint do
-  # TODO: check Application for a list enabled backends
-  # TODO: construct function calls based on atoms
-  # This uses the 'main' function should be called 
-  #
   # This should use one of the backend as the 'source' for IDs,
   # and then send the computed structs to write back to one or more backends,
   # if any structs were returned from the update process
@@ -11,18 +7,43 @@ defmodule CheckerMal.Backend.EntryPoint do
   # response structs for any updates, so changes made while waiting for
   # results are kept, they won't get overwritten
 
-  def read(type) do
+  @default_source :txt
+  @default_backends [:txt]
+
+  def read(type, rating) do
     # TODO: do, for each rating
     # :txt is default source
-    source_backend = Application.get_env(:checker_mal, :source_backend, :txt)
+    source_backend = Application.get_env(:checker_mal, :source_backend, @default_source)
 
     apply(
       get_backend_module(source_backend),
       :read,
-      [type, :sfw]
+      [type, rating]
     )
   end
 
+  # receives one or more feed items to write back to the file
+  # reads incase any other changes have been made manually
+  # in the interim (while requesting)
+  def write(changed_structs, type, rating) when is_list(changed_structs) do
+    backends = Application.get_env(:checker_mal, :enabled_backends, @default_backends)
+
+    if length(changed_structs) > 0 do
+      backends
+      |> Enum.map(fn backend_atom ->
+        apply(
+          get_backend_module(backend_atom),
+          :write,
+          [changed_structs, type, rating]
+        )
+      end)
+    else
+      {:ok, :no_changes_to_process}
+    end
+  end
+
+  # gets and loads a module for a backend
+  # e.g. CheckerMal.Backend.Txt from the :txt atom
   def get_backend_module(backend_atom) when is_atom(backend_atom) do
     backend_module_name =
       backend_atom

@@ -1,5 +1,7 @@
 use Mix.Config
 
+# TODO: copy this into test.exs so doctests run the same?
+
 # This file describes how many pages should be checked, and how often
 # When the last item for each of these page ranges is stored in PostGres,
 # it persists across runs
@@ -33,3 +35,7 @@ config :checker_mal,
     {:unapproved, T.ms_to_s(T.days(30))},
     {:infinite, T.ms_to_s(T.days(60))}
   ]
+
+# reason why this uses seconds instead of ms
+# is so that it should fit into the default
+# int type for any SQL-type backend

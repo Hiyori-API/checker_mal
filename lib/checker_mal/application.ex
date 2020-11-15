@@ -16,7 +16,8 @@ defmodule CheckerMal.Application do
       # Start the Endpoint (http/https)
       CheckerMalWeb.Endpoint,
       CheckerMal.Core.RateLimit,
-      CheckerMal.Core.Unapproved
+      CheckerMal.Core.Unapproved,
+      CheckerMal.Core.Scheduler
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

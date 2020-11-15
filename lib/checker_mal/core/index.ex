@@ -3,13 +3,14 @@ defmodule CheckerMal.Core.FeedItem do
   Represents a MAL item that was approved, deleted or changed in some way
   """
 
-  # type: :anime or :manga
-  # rating: :sfw or :nsfw
+  # mal_id # id added or removed
   # action: :added, :removed or :changed
   # :changed is for possible future usage
-  defstruct type: :anime,
-            mal_id: -1,
-            rating: :sfw,
+  # the type (anime/manga) and rating (sfw/nsfw)
+  # arent needed here since they're passed around
+  # as arguments from the scheduler to the backend,
+  # so it would just be dupliting info
+  defstruct mal_id: -1,
             action: :added
 end
 
@@ -26,7 +27,82 @@ defmodule CheckerMal.Core.Index do
   alias CheckerMal.Core.FeedItem
   alias CheckerMal.Core.Utils
   alias CheckerMal.Core.Unapproved.Wrapper
+  alias CheckerMal.Backend.EntryPoint
   require Logger
+
+  @doc """
+  Recieves requests to update pages
+
+  Reads from the source backend
+  Requests number of pages using stop strategy,
+  sending any updates to the Backend.Entrypoint
+  """
+  def request(type, pages, finished_callback) when is_atom(type) do
+    # most of the time, pages is a bitstring, from the db read by the scheduler
+    # stop_strategy is a number if nothing else matches,
+    # which pattern matches on the find_new with no atom
+    stop_strategy =
+      cond do
+        is_atom(pages) ->
+          pages
+
+        is_integer(pages) ->
+          pages
+
+        # no page_range here since that should just pass a number
+        pages in ["unapproved", "infinite", "one", "testing"] ->
+          String.to_atom(pages)
+
+        true ->
+          String.to_integer(pages)
+      end
+
+    Logger.info("Starting search: #{type} #{stop_strategy} (NSFW)")
+    # search NSFW pages
+    # can ignore the reached page here, since there
+    # are far more (11x) SFW entries
+    {_reached_page, new_nsfw_structs} =
+      find_new(
+        EntryPoint.read(type, :nsfw) |> MapSet.new(),
+        type,
+        :nsfw,
+        if is_number(stop_strategy) do
+          ceil(stop_strategy / 5)
+        else
+          stop_strategy
+        end
+      )
+
+    Logger.info("Starting search: #{type} #{stop_strategy} (SFW)")
+    # search SFW pages
+    {reached_page, new_sfw_structs} =
+      find_new(
+        EntryPoint.read(type, :sfw) |> MapSet.new(),
+        type,
+        :sfw,
+        stop_strategy
+      )
+
+    # write back to backend
+    EntryPoint.write(new_nsfw_structs, type, :nsfw)
+    EntryPoint.write(new_sfw_structs, type, :sfw)
+    # send message to scheduler process, notifying it
+    # that we're done, and how many pages were processed
+    finished_callback.(
+      reached_page,
+      cond do
+        is_integer(stop_strategy) ->
+          :page_range
+
+        is_atom(stop_strategy) ->
+          stop_strategy
+
+        true ->
+          raise "Unexpected stop strategy, not an atom or a number #{stop_strategy}"
+      end,
+      type
+    )
+  end
 
   @doc """
   Updates either :anime or :manga for a particular page range
@@ -42,15 +118,17 @@ defmodule CheckerMal.Core.Index do
 
   stop_strategy is :page_range, :unapproved, or :infinite
   :page_range => request a certain amount of pages, extend if items are found
+  :one => only request the cur_page, then exit immediately
   :unapproved => request till we've requested all unapproved items
   :infinite => request all items
+  :testing => used while testing, typically only runs one loop
   """
   def find_new(old_items, type, rating, no_of_pages) when is_integer(no_of_pages) do
     add_from_page(
       type,
       rating,
       old_items,
-      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
+      Utils.mapset_to_reverse_sorted(old_items),
       [],
       :page_range,
       no_of_pages,
@@ -64,7 +142,7 @@ defmodule CheckerMal.Core.Index do
       type,
       rating,
       old_items,
-      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
+      Utils.mapset_to_reverse_sorted(old_items),
       [],
       :unapproved,
       false,
@@ -78,7 +156,7 @@ defmodule CheckerMal.Core.Index do
       type,
       rating,
       old_items,
-      old_items |> MapSet.to_list() |> Utils.reverse_sort(),
+      Utils.mapset_to_reverse_sorted(old_items),
       [],
       :infinite,
       2,
@@ -86,18 +164,38 @@ defmodule CheckerMal.Core.Index do
     )
   end
 
+  # page_number is the page to search for IDs
+  def find_new(old_items, type, rating, :one, page_number) do
+    add_from_page(
+      type,
+      rating,
+      old_items,
+      Utils.mapset_to_reverse_sorted(old_items),
+      [],
+      :one,
+      page_number + 1,
+      page_number
+    )
+  end
+
   # base case
   def add_from_page(_, _, _, _, new_structs, :page_range, till_page, cur_page)
       when cur_page > till_page,
-      do: new_structs
+      do: {cur_page - 1, new_structs}
 
   # :testing atom is used while testing, returns once new_structs have at least one item, typically
   # after one recurse
-  def add_from_page(_, _, _, _, new_structs, :testing, _, _) when length(new_structs) > 0,
-    do: new_structs
+  def add_from_page(_, _, _, _, new_structs, :testing, _, cur_page) when length(new_structs) > 0,
+    do: {cur_page - 1, new_structs}
 
   # base case for unapproved items
-  def add_from_page(_, _, _, _, new_structs, :unapproved, true, _), do: new_structs
+  def add_from_page(_, _, _, _, new_structs, :unapproved, true, cur_page),
+    do: {cur_page - 1, new_structs}
+
+  # base case for requesting a single page, till_page is always set to true after
+  # a single recurse
+  def add_from_page(_, _, _, _, new_structs, :one, true, cur_page),
+    do: {cur_page - 1, new_structs}
 
   # old_items: the MapSet of items from find_new
   # sorted_items: a sorted list of old_items
@@ -121,7 +219,7 @@ defmodule CheckerMal.Core.Index do
     # :infinite would exit here or at the bottom if length(ids_on_page) != 50,
     # since the above add_from_page base case doesn't apply
     if ids_on_page |> length() == 0 do
-      new_structs
+      {cur_page, new_structs}
     else
       # get the min/max id on page
       max_id_on_page = ids_on_page |> hd()
@@ -174,16 +272,16 @@ defmodule CheckerMal.Core.Index do
         Enum.concat([
           new_structs,
           Enum.map(not_present_in_search, fn id ->
-            %FeedItem{type: type, rating: rating, mal_id: id, action: :removed}
+            %FeedItem{mal_id: id, action: :removed}
           end),
           Enum.map(new_ids, fn id ->
-            %FeedItem{type: type, rating: rating, mal_id: id, action: :added}
+            %FeedItem{mal_id: id, action: :added}
           end)
         ])
 
       # if number of entries != 50, this is the last page
       if ids_on_page |> length() != 50 do
-        new_structs
+        {cur_page, new_structs}
       else
         # if stop_strategy is page_range,
         # if we found new IDs, if current page + some number > till_page, set new till_page
@@ -219,9 +317,24 @@ defmodule CheckerMal.Core.Index do
             :infinite ->
               cur_page + 1
 
+            # has gone through the loop once; done
+            :one ->
+              true
+
             _ ->
               # unknown/:testing, use same
               till_page
+          end
+
+        # special case, if this found entries on the last unapproved page
+        {updated_till_page, stop_strategy} =
+          if stop_strategy == :unapproved and updated_till_page == true and length(new_ids) > 0 do
+            # set to infinite, will also mark unapproved as done
+            # this is probably only going to happen the first time something
+            # is indexed, or when the last entry ID on MAL is approved
+            {cur_page + 5, :infinite}
+          else
+            {updated_till_page, stop_strategy}
           end
 
         # recurse

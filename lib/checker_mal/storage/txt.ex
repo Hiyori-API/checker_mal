@@ -10,6 +10,7 @@ defmodule CheckerMal.Backend.Txt do
     # TODO: implement write changes
   end
 
+  # read from the file or return an empty list if it doesnt exist
   defp read_or_empty(type, rating) do
     base = Application.get_env(:checker_mal, :txt_backend_directory, "./")
     path = Path.join(base, "#{Atom.to_string(type)}_#{Atom.to_string(rating)}.txt")

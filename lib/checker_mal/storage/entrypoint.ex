@@ -13,6 +13,7 @@ defmodule CheckerMal.Backend.EntryPoint do
 
   def read(type) do
     # TODO: do, for each rating
+    # :txt is default source
     source_backend = Application.get_env(:checker_mal, :source_backend, :txt)
 
     apply(

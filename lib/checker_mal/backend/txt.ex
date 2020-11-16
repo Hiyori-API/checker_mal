@@ -38,7 +38,7 @@ defmodule CheckerMal.Backend.Txt do
       |> Stream.filter(fn ln -> String.length(ln) > 0 end)
       |> Enum.map(fn ln -> String.to_integer(ln) end)
     else
-      Logger.warning("Using empty cache for #{type} #{rating}")
+      Logger.warn("Using empty cache for #{type} #{rating}")
       dirname = Path.dirname(path)
 
       if not File.exists?(dirname) do

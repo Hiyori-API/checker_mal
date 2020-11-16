@@ -51,7 +51,8 @@ defmodule CheckerMal.Core.Scheduler do
     {:ok, Map.merge(state, read_state())}
   end
 
-  def schedule_check(in_ms \\ @loop_period), do: Process.send_after(Process.whereis(CheckerMal.Core.Scheduler), :check, in_ms)
+  def schedule_check(in_ms \\ @loop_period),
+    do: Process.send_after(Process.whereis(CheckerMal.Core.Scheduler), :check, in_ms)
 
   def handle_info(:check, state), do: {:noreply, maintenance(state)}
 
@@ -68,12 +69,13 @@ defmodule CheckerMal.Core.Scheduler do
     # instead, that schedule is done in finished_requesting
     #
     # if we can acquire, this means theres nothing else running
-    state = if not state[:lock] do
-      # try to update pages
-      cast_pages(state, expired_ranges)
-    else
-      state
-    end
+    state =
+      if not state[:lock] do
+        # try to update pages
+        cast_pages(state, expired_ranges)
+      else
+        state
+      end
 
     # reschedule
     schedule_check()
@@ -107,6 +109,7 @@ defmodule CheckerMal.Core.Scheduler do
             end
           )
         end)
+
       %{state | lock: true}
     else
       state

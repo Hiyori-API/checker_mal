@@ -47,6 +47,8 @@ defmodule CheckerMal.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.7.0"},
       {:floki, "~> 0.29.0"},
+      {:jikan_ex, "~> 0.1.5"},
+      {:cachex, ">= 3.3.0"},
       {:exvcr, "~> 0.10", only: :test},
       {:temp, "~> 0.4", only: :test}
     ]

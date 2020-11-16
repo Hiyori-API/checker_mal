@@ -36,3 +36,69 @@ body {
   background-color: #121212;
   color: #eee;
 }
+
+section#mal-unapproved {
+  margin-top: 2rem;
+  font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  padding-left: 10%;
+  padding-right: 10%;
+
+  color: #ccc;
+
+  .buttons {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    margin-left: 1rem;
+    a {
+      text-transform: uppercase;
+      margin-right: 0.75rem;
+      font-variant: small-caps;
+      text-decoration: none;
+      color: #eee;
+      border-radius: 0.35rem;
+      padding: 0.5rem 1rem;
+      padding-top: 0.75rem;
+      border: 1px solid #ccc;
+    }
+
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    @media only screen and (max-width: 400px) {
+      flex-flow: column;
+      a {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+
+  ol {
+    li {
+      margin-bottom: 0.25rem;
+    }
+    list-style-type: none;
+    a.button {
+      color: #ccc;
+    }
+    a.button:hover {
+      color: #9c9c9c;
+    }
+    .nsfw {
+      color: #ac0900;
+    }
+    a {
+      color: #ccc;
+    }
+    a:link {
+      color: #ccc;
+    }
+    a:hover {
+      text-decoration: none;
+    }
+    a:visited {
+      color: #6e6d6d;
+    }
+  }
+}

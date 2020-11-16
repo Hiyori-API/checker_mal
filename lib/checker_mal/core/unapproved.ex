@@ -23,32 +23,43 @@ defmodule CheckerMal.Core.Unapproved do
   end
 
   # TODO: add functions which accept the current approved cache and return unapproved IDs
-  def handle_call({:get_all_anime}, _from, state) do
+  def handle_call(:get_all_anime, _from, state) do
     state = run_if_expired(state)
     {:reply, Map.get(state, "all_anime"), state}
   end
 
-  def handle_call({:get_all_manga}, _from, state) do
+  def handle_call(:get_all_manga, _from, state) do
     state = run_if_expired(state)
     {:reply, Map.get(state, "all_manga"), state}
   end
 
-  def handle_call({:has_data}, _from, state),
-    do: {:reply, Utils.has_data?(state) && not Utils.has_expired?(state), state}
+  def handle_call(:last_updated_at, _from, state) do
+    resp =
+      if Map.has_key?(state, "at") do
+        {:ok, state["at"]}
+      else
+        {:error, :uninitialized}
+      end
+
+    {:reply, resp, state}
+  end
+
+  def handle_call(:has_vaid_data?, _from, state),
+    do: {:reply, has_valid_data?(state), state}
 
   defp run_if_expired(state) do
-    if Utils.has_expired?(state) or not Utils.has_data?(state) do
-      Logger.info("Running update for unapproved cache...")
+    if not has_valid_data?(state) do
       run_update(state)
     else
-      Logger.debug("Unapproved cache is already up to date")
       state
     end
   end
 
+  defp has_valid_data?(state), do: Utils.has_data?(state) and not Utils.has_expired?(state)
+
   defp run_update(state) do
     Map.merge(state, Parser.request())
-    |> Map.merge(%{"at" => DateTime.utc_now()})
+    |> Map.merge(%{"at" => NaiveDateTime.utc_now()})
   end
 end
 
@@ -63,7 +74,7 @@ defmodule CheckerMal.Core.Unapproved.Utils do
   end
 
   def has_expired?(state) do
-    now = DateTime.utc_now()
+    now = NaiveDateTime.utc_now()
 
     expire_seconds =
       div(Application.get_env(:checker_mal, :unapproved_page_expire_time, :timer.hours(3)), 1000)
@@ -72,7 +83,7 @@ defmodule CheckerMal.Core.Unapproved.Utils do
       not Map.has_key?(state, "at") ->
         true
 
-      DateTime.diff(now, Map.get(state, "at", now)) > expire_seconds ->
+      NaiveDateTime.diff(now, Map.get(state, "at", now)) > expire_seconds ->
         true
 
       true ->
@@ -86,10 +97,8 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
   Exposes the Genserver.call with long timeouts as functions
   """
 
-  defp get_handler(genserver_atom) when is_atom(genserver_atom), do: get_handler({genserver_atom})
-
-  defp get_handler(genserver_data),
-    do: GenServer.call(CheckerMal.Core.Unapproved, genserver_data, :timer.hours(1))
+  defp get_handler(genserver_atom) when is_atom(genserver_atom),
+    do: GenServer.call(CheckerMal.Core.Unapproved, genserver_atom, :timer.hours(1))
 
   def get_all_anime(), do: get_handler(:get_all_anime)
   def get_all_manga(), do: get_handler(:get_all_manga)
@@ -106,13 +115,16 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   @relation_id_page "https://myanimelist.net/info.php?search=%25%25%25&go=relationids&divname=relationGen1"
 
   def request() do
+    # call 'used' on RateLimit now, since unapproved cache request takes a while
+    GenServer.cast(CheckerMal.Core.RateLimit, {:used, "MAL"})
+
     case Scraper.rated_http_get(@relation_id_page) do
       {:ok, html_response} ->
         parse_unapproved_page(html_response)
 
       {:error, err} ->
         Logger.error(err)
-        %{"all_anime" => [], "all_manga" => []}
+        %{}
     end
   end
 

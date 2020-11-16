@@ -19,6 +19,16 @@ defmodule CheckerMalWeb.Router do
     get "/", PageController, :index
   end
 
+  if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do
+    scope "/mal_unapproved", CheckerMalWeb do
+      pipe_through :browser
+
+      get "/", UnapprovedController, :anime
+      get "/anime", UnapprovedController, :anime
+      get "/manga", UnapprovedController, :manga
+    end
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", CheckerMalWeb do
   #   pipe_through :api

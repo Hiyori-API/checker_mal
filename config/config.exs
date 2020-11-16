@@ -7,7 +7,7 @@
 # General application configuration
 use Mix.Config
 
-# application functionality config
+# mal index config
 config :checker_mal,
   # seconds, as an integer
   mal_wait_time: 10,
@@ -21,6 +21,19 @@ config :checker_mal,
 # enabled_backends: [:txt, :mongodb]
 
 import_config "pages.exs"
+
+# unapproved html configuration
+# optional webapp at /mal_unapproved/
+# to display currently unapproved entries
+#
+# unapproved_check_time: time between checking if theres a new cache in checker_mal
+config :checker_mal,
+  unapproved_html_enabled: true,
+  unapproved_check_time: :timer.minutes(5)
+
+# jikan, used for the unapproved html page
+config :jikan_ex,
+  base_url: "http://localhost:8000/v3/"
 
 config :checker_mal,
   ecto_repos: [CheckerMal.Repo]

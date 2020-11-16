@@ -4,7 +4,7 @@ defmodule CheckerMal.Backend.Txt.Test do
   alias CheckerMal.Backend.Txt
   alias CheckerMal.Core.FeedItem
 
-  test 'test write' do
+  test 'write' do
     {:ok, tmp_path} = Temp.path()
     File.mkdir!(tmp_path)
 

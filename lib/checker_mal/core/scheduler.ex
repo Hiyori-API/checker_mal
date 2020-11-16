@@ -18,7 +18,7 @@ defmodule CheckerMal.Core.Scheduler do
   from somewhere else
 
   finished_requesting is called by the called process, to mark
-  how many pages were checked. That sets the lock to nil
+  how many pages were checked
 
   any other requests made while there this is locked will wait in
   an aquire. up to the callee on how to handle retrying trying to
@@ -63,11 +63,10 @@ defmodule CheckerMal.Core.Scheduler do
     Logger.debug("Running maintenance...")
     state = Map.merge(state, read_state())
     expired_ranges = check_expired(state)
-    cast_pages(state, expired_ranges)
     # this doesn't schedule check here, since if a task takes more than @loop_period
     # that would mean lots of :check requests would attempt to aquire the lock
     # instead, that schedule is done in finished_requesting
-    state
+    cast_pages(state, expired_ranges)
   end
 
   defp cast_pages(state, expired_ranges) do
@@ -77,7 +76,7 @@ defmodule CheckerMal.Core.Scheduler do
       # otherwise, there are 11x as more SFW entries anyways, so NSFW should
       # always be checked well enough
       expired_ranges
-      |> Enum.each(fn {type, timeframe} ->
+      |> Enum.with_index(fn {{type, timeframe}, index} ->
         # spawn a process and run update there
         # aquire the lock in the child process, so multiple don't run concurrently
         # and this doesn't block the genserver waiting to aquire the lock
@@ -92,12 +91,21 @@ defmodule CheckerMal.Core.Scheduler do
               fn page_count, stop_strategy, type ->
                 GenServer.call(
                   CheckerMal.Core.Scheduler,
-                  {:finished_requesting, page_count, stop_strategy, type}
+                  {:finished_requesting, page_count, stop_strategy, type},
+                  :timer.minutes(1)
                 )
+
+                # if this is the last item being processed
+                # called when the item has finished writing back to database
+                if index == length(expired_ranges) - 1 do
+                  schedule_check()
+                end
               end
             )
           end)
       end)
+    else
+      schedule_check()
     end
 
     state

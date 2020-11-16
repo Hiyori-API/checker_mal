@@ -2,6 +2,9 @@ defmodule CheckerMalWeb.UnapprovedController do
   use CheckerMalWeb, :controller
   require Logger
 
+  @error_msg "Server is booting, still fetching IDs, try again in a minute..."
+  @update_msg "Warning: page is currently being updated, parts may be broken. Try again in a minute..."
+
   defp stringify_type(:anime), do: %{type: "anime"}
   defp stringify_type(:manga), do: %{type: "manga"}
 
@@ -38,27 +41,31 @@ defmodule CheckerMalWeb.UnapprovedController do
           case err do
             :uninitialized ->
               Map.merge(
-                %{error: "Server is booting, page is not ready yet..."},
+                %{error: @error_msg},
                 stringify_type(type)
               )
 
             :genserver_timeout ->
               Map.merge(
-                %{
-                  error:
-                    "Page is currently being updated, there may be issues displaying the information..."
-                },
+                %{warning: @update_msg},
                 stringify_type(type)
               )
           end
       end
 
+    # flash warnings if page is initializing/updating
     conn =
-      if Map.has_key?(data, :error) do
-        conn
-        |> put_flash(:error, data[:error])
-      else
-        conn
+      cond do
+        Map.has_key?(data, :error) ->
+          conn
+          |> put_flash(:error, data[:error])
+
+        Map.has_key?(data, :warning) ->
+          conn
+          |> put_flash(:warning, data[:warning])
+
+        true ->
+          conn
       end
 
     # cache IDs so that if this is being updated the site doesnt go down
@@ -75,16 +82,33 @@ defmodule CheckerMalWeb.UnapprovedController do
           data = Map.put(data, :ids, Cachex.get!(:unap_html, cachex_key))
           {conn, data}
         else
-          {conn |> put_flash(:error, "Error fetching unapproved ids, try again in a minute"),
-           Map.put(data, :ids, [])}
+          {conn |> put_flash(:error, @error_msg), Map.put(data, :ids, [])}
         end
       else
         Cachex.put(:unap_html, cachex_key, data[:ids])
         {conn, data}
       end
 
-    # TODO: send current IDs off to data genserver
-    # TODO: ask for IDs from data genserver
+    # get entry info (name/type/nsfw)
+    entryinfo =
+      GenServer.call(
+        CheckerMal.UnapprovedHtml.EntryCache,
+        {:get_info, Atom.to_string(type), data[:ids]},
+        :timer.seconds(10)
+      )
+      |> Map.to_list()
+      |> Enum.map(fn {id, {name, etype, nsfw}} ->
+        {id,
+         %{
+           :name => name,
+           :type => etype,
+           :nsfw => nsfw
+         }}
+      end)
+      |> Enum.into(Map.new())
+
+    # map so that its easier to use in eex
+    data = Map.put(data, :info, entryinfo)
 
     {conn, data}
   end

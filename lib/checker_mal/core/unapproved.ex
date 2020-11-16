@@ -115,9 +115,6 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   @relation_id_page "https://myanimelist.net/info.php?search=%25%25%25&go=relationids&divname=relationGen1"
 
   def request() do
-    # call 'used' on RateLimit now, since unapproved cache request takes a while
-    GenServer.cast(CheckerMal.Core.RateLimit, {:used, "MAL"})
-
     case Scraper.rated_http_get(@relation_id_page) do
       {:ok, html_response} ->
         parse_unapproved_page(html_response)

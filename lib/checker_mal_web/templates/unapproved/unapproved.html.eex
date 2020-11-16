@@ -16,8 +16,21 @@
   <ol>
     <%= for entry <- @data[:ids] do %>
       <li>
+        <%= if @data[:info][entry] do %>
+          <%= "#{entry} (#{@data[:info][entry][:type]}) " %>
+          <%= if @data[:info][entry][:nsfw] do %>
+            <span class="nsfw">[NSFW]</span>
+          <% end %>
+        <% else %>
+          <%= "#{entry} (???) " %>
+        <% end %>
+        <%= "- " %>
         <a href="<%= "https://myanimelist.net/#{@data[:type]}/#{entry}" %>">
-          <%= entry %>
+          <%= if @data[:info][entry] do %>
+            <%= @data[:info][entry][:name] %>
+          <% else %>
+            <%= "https://myanimelist.net/#{@data[:type]}/#{entry}" %>
+          <% end %>
         </a>
       </li>
     <% end %>

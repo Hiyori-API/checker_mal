@@ -8,8 +8,9 @@ defmodule CheckerMal.Application do
   defp unapproved_html() do
     if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do
       [
-        CheckerMal.UnapprovedHtml.Cache,
-        {Cachex, name: :unap_html}
+        {Cachex, name: :unap_html},
+        CheckerMal.UnapprovedHtml.EntryCache,
+        CheckerMal.UnapprovedHtml.Cache
       ]
     else
       []

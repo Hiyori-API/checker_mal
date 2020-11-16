@@ -36,7 +36,10 @@ defmodule CheckerMal.UnapprovedHtml.Cache do
   defp get_map_keys(:anime), do: {"approved_anime_ids", "unapproved_anime_ids"}
   defp get_map_keys(:manga), do: {"approved_manga_ids", "unapproved_manga_ids"}
 
-  defp compute_unapproved(type, state) do
+  defp compute_unapproved("anime", state), do: compute_unapproved(:anime, state)
+  defp compute_unapproved("manga", state), do: compute_unapproved(:manga, state)
+
+  defp compute_unapproved(type, state) when is_atom(type) do
     {ak, uk} = get_map_keys(type)
     MapSet.difference(state[uk], state[ak]) |> MapSet.to_list() |> Utils.reverse_sort()
   end
@@ -49,7 +52,18 @@ defmodule CheckerMal.UnapprovedHtml.Cache do
         "unapproved_manga_ids" => Wrapper.get_all_manga() |> MapSet.new()
       })
 
-    Map.merge(state, read_valid_ids())
+    state = Map.merge(state, read_valid_ids())
+
+    # cast requests unapproved entries off to entry cache genserver, to save type/name
+    ["anime", "manga"]
+    |> Enum.each(fn type ->
+      compute_unapproved(type, state)
+      |> Enum.each(fn id ->
+        GenServer.cast(CheckerMal.UnapprovedHtml.EntryCache, {:cache_entry, type, id})
+      end)
+    end)
+
+    state
   end
 
   defp read_valid_ids() do

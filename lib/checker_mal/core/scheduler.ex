@@ -60,7 +60,7 @@ defmodule CheckerMal.Core.Scheduler do
   Checks if any of the page ranges have expired, makes requests by spawning processes if any have
   """
   def maintenance(state) do
-    Logger.debug("Running maintenance...")
+    Logger.debug("ID Checker: Checking if any page ranges have expired...")
     state = Map.merge(state, read_state())
     expired_ranges = check_expired(state)
     # this doesn't schedule check here, since if a task takes more than @loop_period

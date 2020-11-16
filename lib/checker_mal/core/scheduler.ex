@@ -63,7 +63,6 @@ defmodule CheckerMal.Core.Scheduler do
     Logger.debug("Running maintenance...")
     state = Map.merge(state, read_state())
     expired_ranges = check_expired(state)
-    Logger.debug("Expired ranges #{expired_ranges}")
     # this doesn't schedule check here, since if a task takes more than @loop_period
     # that would mean lots of :check requests would attempt to aquire the lock
     # instead, that schedule is done in finished_requesting

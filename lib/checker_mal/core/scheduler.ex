@@ -76,7 +76,8 @@ defmodule CheckerMal.Core.Scheduler do
       # otherwise, there are 11x as more SFW entries anyways, so NSFW should
       # always be checked well enough
       expired_ranges
-      |> Enum.with_index(fn {{type, timeframe}, index} ->
+      |> Enum.with_index()
+      |> Enum.map(fn {{type, timeframe}, index} ->
         # spawn a process and run update there
         # aquire the lock in the child process, so multiple don't run concurrently
         # and this doesn't block the genserver waiting to aquire the lock

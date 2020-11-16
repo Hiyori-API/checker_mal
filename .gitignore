@@ -1,3 +1,6 @@
+tags*
+*.pdf
+
 # txt cache directory
 /cache/
 

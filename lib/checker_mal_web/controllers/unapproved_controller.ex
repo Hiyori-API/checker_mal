@@ -11,7 +11,7 @@ defmodule CheckerMalWeb.UnapprovedController do
         GenServer.call(CheckerMal.Core.Unapproved, :last_updated_at, :timer.seconds(3))
       catch
         :exit, {:timeout, _err} ->
-          Logger.warning("GenServer timeout when trying to fetch when last updated")
+          Logger.warn("GenServer timeout when trying to fetch when last updated")
           {:error, :genserver_timeout}
       end
 

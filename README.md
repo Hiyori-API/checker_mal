@@ -2,6 +2,8 @@
 
 This is mostly a rewrite of [mal-id-cache](https://github.com/seanbreckenridge/mal-id-cache), with nicer concurrency/entrypoints.
 
+Currently any changes discovered by this are back filled to `mal-id-cache`
+
 This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has some additional, optional `applications`.
 
 ### Planned Features:
@@ -17,7 +19,7 @@ Check [`config/pages.exs`](./config/pages.exs) for how often this checks differe
 
 ---
 
-To start your Phoenix server:
+This can be run with `mix run --no-halt` or `mix phx.server`
 
 - Install dependencies with `mix deps.get`
 - Create and migrate your database with `mix ecto.setup`

@@ -332,6 +332,8 @@ defmodule CheckerMal.Core.Index do
             # set to infinite, will also mark unapproved as done
             # this is probably only going to happen the first time something
             # is indexed, or when the last entry ID on MAL is approved
+            # TODO: change return value to propogate infinite back to scheduler? Its such
+            # a nice case that I don't think its required
             {cur_page + 5, :infinite}
           else
             {updated_till_page, stop_strategy}

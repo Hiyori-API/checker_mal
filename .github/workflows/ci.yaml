@@ -9,9 +9,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04]
-        otp: [23.x]
-        elixir: [1.11.x]
-        node: [15.x]
+        otp: [22.x]
+        elixir: [1.9.x]
+        node: [12.x]
 
     services:
       db:

@@ -11,7 +11,7 @@ defmodule CheckerMal.Core.Scheduler do
   State includes:
     anime: [anime page data (from db)]
     manga: [manga... (same as anime)]
-    lock: sleeplock pid
+    lock: bool  # whether or not something is requesting currently
 
   locked is set in maintenance if some task is starting, else
   (for future usage), if a request to check a page was received
@@ -43,9 +43,7 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   def init(init_state \\ %{}) do
-    # should never be more than one of these, create spinlock ref
-    {:ok, sleeplock_ref} = :sleeplocks.new(1)
-    state = Map.merge(init_state, %{lock: sleeplock_ref})
+    state = Map.merge(init_state, %{lock: false})
     # create any missing page ranges, if needed
     init_db()
     # so this doesn't stop initial startup process
@@ -53,7 +51,8 @@ defmodule CheckerMal.Core.Scheduler do
     {:ok, Map.merge(state, read_state())}
   end
 
-  def schedule_check(in_ms \\ @loop_period), do: Process.send_after(self(), :check, in_ms)
+  def schedule_check(in_ms \\ @loop_period), do: Process.send_after(Process.whereis(CheckerMal.Core.Scheduler), :check, in_ms)
+
   def handle_info(:check, state), do: {:noreply, maintenance(state)}
 
   @doc """
@@ -63,10 +62,22 @@ defmodule CheckerMal.Core.Scheduler do
     Logger.debug("Running maintenance...")
     state = Map.merge(state, read_state())
     expired_ranges = check_expired(state)
+    Logger.debug("Expired ranges #{expired_ranges}")
     # this doesn't schedule check here, since if a task takes more than @loop_period
     # that would mean lots of :check requests would attempt to aquire the lock
     # instead, that schedule is done in finished_requesting
-    cast_pages(state, expired_ranges)
+    #
+    # if we can acquire, this means theres nothing else running
+    state = if not state[:lock] do
+      # try to update pages
+      cast_pages(state, expired_ranges)
+    else
+      state
+    end
+
+    # reschedule
+    schedule_check()
+    state
   end
 
   defp cast_pages(state, expired_ranges) do
@@ -75,41 +86,31 @@ defmodule CheckerMal.Core.Scheduler do
       # about the SFW request sending the page range back to finished_requesting
       # otherwise, there are 11x as more SFW entries anyways, so NSFW should
       # always be checked well enough
-      expired_ranges
-      |> Enum.with_index()
-      |> Enum.map(fn {{type, timeframe}, index} ->
-        # spawn a process and run update there
-        # aquire the lock in the child process, so multiple don't run concurrently
-        # and this doesn't block the genserver waiting to aquire the lock
-        # link with child process, this genserver crashes/restarts if that crashes
-        {:ok, _task} =
-          Task.start_link(fn ->
-            :sleeplocks.acquire(state[:lock])
-
-            Index.request(
-              type,
-              timeframe,
-              fn page_count, stop_strategy, type ->
-                GenServer.call(
-                  CheckerMal.Core.Scheduler,
-                  {:finished_requesting, page_count, stop_strategy, type},
-                  :timer.minutes(1)
-                )
-
-                # if this is the last item being processed
-                # called when the item has finished writing back to database
-                if index == length(expired_ranges) - 1 do
-                  schedule_check()
-                end
-              end
-            )
-          end)
-      end)
+      #
+      # process one job
+      {type, timeframe} = expired_ranges |> hd()
+      # spawn a process and run update there
+      # aquire the lock in the child process, so multiple don't run concurrently
+      # and this doesn't block the genserver waiting to aquire the lock
+      # link with child process, this genserver crashes/restarts if that crashes
+      {:ok, _task} =
+        Task.start_link(fn ->
+          Index.request(
+            type,
+            timeframe,
+            fn page_count, stop_strategy, type ->
+              GenServer.call(
+                CheckerMal.Core.Scheduler,
+                {:finished_requesting, page_count, stop_strategy, type},
+                :timer.minutes(1)
+              )
+            end
+          )
+        end)
+      %{state | lock: true}
     else
-      schedule_check()
+      state
     end
-
-    state
   end
 
   @doc """
@@ -211,9 +212,7 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   def handle_call({:finished_requesting, page_count, stop_strategy, type}, _from, state) do
-    # release the lock, anything else trying to request can now aquire
-    :sleeplocks.release(state[:lock])
-    {:reply, finished_requesting(page_count, stop_strategy, type), state}
+    {:reply, finished_requesting(page_count, stop_strategy, type), %{state | lock: false}}
   end
 end
 

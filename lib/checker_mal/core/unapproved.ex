@@ -33,6 +33,8 @@ defmodule CheckerMal.Core.Unapproved do
     {:reply, Map.get(state, "all_manga"), state}
   end
 
+  def handle_call({:has_data}, _from, state), do: {:reply, Utils.has_data?(state) && not Utils.has_expired?(state), state}
+
   defp run_if_expired(state) do
     if Utils.has_expired?(state) or not Utils.has_data?(state) do
       Logger.info("Running update for unapproved cache...")

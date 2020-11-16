@@ -17,9 +17,9 @@ config :checker_mal, CheckerMal.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 secret_key_base =
-  System.get_env("SECRET_KEY_BASE") ||
+  System.get_env("CHECKER_MAL_SECRET") ||
     raise """
-    environment variable SECRET_KEY_BASE is missing.
+    environment variable CHECKER_MAL_SECRET is missing.
     You can generate one by calling: mix phx.gen.secret
     """
 

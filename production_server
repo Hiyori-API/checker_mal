@@ -1,0 +1,37 @@
+#!/bin/bash -e
+
+declare DATABASE_URL CHECKER_MAL_SECRET
+CHECKER_MAL_SECRET="${CHECKER_MAL_SECRET:?No CHECKER_MAL_SECRET environment variable set}"
+DATABASE_URL="${CHECKER_MAL_URI:?No CHECKER_MAL_URI environment variable set}"
+MIX_ENV=prod
+readonly DATABASE_URL CHECKER_MAL_SECRET MIX_ENV
+
+case "$1" in
+# drop into an interactive shell after loading environment secrets
+--shell)
+	echo "Dropping into interactive shell with secrets..."
+	bash
+	exit 0
+	;;
+--iex)
+	# drop into iex after loading environment secrets
+	iex -S mix
+	exit 0
+	;;
+--run)
+	:
+	;;
+
+*)
+	echo "Must specify one of:"
+	grep -P '^\s*--?[\w-]+\)' "$(realpath "$0")" | tr -d '); '
+	exit 1
+	;;
+esac
+
+mix deps.get --only prod
+mix compile
+
+npm install --prefix ./assets 2>/dev/null
+npm run deploy --prefix ./assets 2>/dev/null
+exec mix prod.server

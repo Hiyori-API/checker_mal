@@ -16,7 +16,7 @@ defmodule CheckerMalWeb.Router do
   scope "/", CheckerMalWeb do
     pipe_through :browser
 
-    #get "/", PageController, :index
+    # get "/", PageController, :index
   end
 
   if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do

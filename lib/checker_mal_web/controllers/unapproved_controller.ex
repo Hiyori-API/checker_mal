@@ -110,6 +110,9 @@ defmodule CheckerMalWeb.UnapprovedController do
     # map so that its easier to use in eex
     data = Map.put(data, :info, entryinfo)
 
+    # set the page title
+    data = Map.put(data, :title, "Unapproved MAL Entries - #{data[:type] |> String.capitalize()}")
+
     {conn, data}
   end
 

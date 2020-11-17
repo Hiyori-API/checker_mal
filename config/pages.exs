@@ -7,7 +7,7 @@ use Mix.Config
 # it persists across runs
 #
 # the numbers below describe SFW page ranges, NSFW are requested at the same time,
-# running with floor(n/2.5)
+# running with ceil(n/5)
 
 defmodule T do
   def days(dys) when is_integer(dys), do: :timer.hours(24) * dys
@@ -20,7 +20,7 @@ end
 # i.e. if we check 40 pages, we can mark 20, 8 and 3 as done
 config :checker_mal,
   anime_pages: [
-    {3, T.ms_to_s(:timer.minutes(30))},
+    {3, T.ms_to_s(:timer.hours(1))},
     {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(4))},
     {40, T.ms_to_s(T.days(10))},
@@ -28,7 +28,7 @@ config :checker_mal,
     {:infinite, T.ms_to_s(T.days(60))}
   ],
   manga_pages: [
-    {3, T.ms_to_s(:timer.minutes(30))},
+    {3, T.ms_to_s(:timer.hours(1))},
     {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(4))},
     {40, T.ms_to_s(T.days(10))},

@@ -91,9 +91,10 @@ defmodule CheckerMal.Core.Scheduler do
       # process one job
       {type, timeframe} = expired_ranges |> hd()
       # spawn a process and run update there
-      # aquire the lock in the child process, so multiple don't run concurrently
+      # aquire the lock, so multiple don't run concurrently
       # and this doesn't block the genserver waiting to aquire the lock
       # link with child process, this genserver crashes/restarts if that crashes
+      # the lock is released in :finished_requesting
       {:ok, _task} =
         Task.start_link(fn ->
           Index.request(

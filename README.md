@@ -17,7 +17,7 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 
 Check [`config/pages.exs`](./config/pages.exs) for how often this checks different page ranges.
 
-The Unapproved HTML webapp can be enabled/disabled in the config. Expects a Jikan instance to be running on port 8000 (port can also be modified in config)
+The Unapproved HTML webapp can be enabled/disabled in the [config](config.exs). Expects a Jikan instance to be running on port 8000 (port can also be modified in config)
 
 ---
 

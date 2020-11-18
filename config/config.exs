@@ -25,9 +25,13 @@ import_config "pages.exs"
 # to display currently unapproved entries
 #
 # unapproved_check_time: time between checking if theres a new cache in checker_mal
+# html_basepath: where pages should be served
+# asset_basepath: where assets (css/js) should be served
 config :checker_mal,
   unapproved_html_enabled: true,
-  unapproved_check_time: :timer.minutes(5)
+  unapproved_check_time: :timer.minutes(5),
+  unapproved_html_basepath: "/mal_unapproved",
+  unapproved_asset_basepath: "/mal_unapproved_assets"
 
 # jikan, used for the unapproved html page
 config :jikan_ex,

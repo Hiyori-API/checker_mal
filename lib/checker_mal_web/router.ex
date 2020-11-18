@@ -20,7 +20,8 @@ defmodule CheckerMalWeb.Router do
   end
 
   if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do
-    scope "/", CheckerMalWeb do
+    scope Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved"),
+          CheckerMalWeb do
       pipe_through :browser
 
       get "/", UnapprovedController, :anime

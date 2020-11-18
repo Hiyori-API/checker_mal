@@ -2,6 +2,8 @@ defmodule CheckerMalWeb.UnapprovedController do
   use CheckerMalWeb, :controller
   require Logger
 
+  @html_basepath Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved")
+
   @error_msg "Server is booting, still fetching IDs, try again in a minute..."
   @update_msg "Warning: page is currently being updated, parts may be broken. Try again in a minute..."
 
@@ -108,10 +110,11 @@ defmodule CheckerMalWeb.UnapprovedController do
       |> Enum.into(Map.new())
 
     # map so that its easier to use in eex
-    data = Map.put(data, :info, entryinfo)
 
-    # set the page title
-    data = Map.put(data, :title, "Unapproved MAL Entries - #{data[:type] |> String.capitalize()}")
+    data =
+      Map.put(data, :info, entryinfo)
+      |> Map.put(:title, "Unapproved MAL Entries - #{data[:type] |> String.capitalize()}")
+      |> Map.put(:basepath, @html_basepath)
 
     {conn, data}
   end

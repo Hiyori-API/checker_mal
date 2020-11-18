@@ -20,9 +20,8 @@ defmodule CheckerMalWeb.Endpoint do
   #
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.
-  # TODO: make global configuration for assets path in config/prod.exs
   plug Plug.Static,
-    at: "/checker_mal_assets",
+    at: Application.get_env(:checker_mal, :unapproved_asset_basepath, "/mal_unapproved_assets"),
     from: :checker_mal,
     gzip: false,
     only: ~w(css fonts images js favicon.ico robots.txt)

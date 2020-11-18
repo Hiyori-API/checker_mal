@@ -11,8 +11,8 @@
         CheckerMal
       <% end %>
     </title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/checker_mal_assets/css/app.css") %>"/>
-    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/checker_mal_assets/js/app.js") %>"></script>
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, Application.get_env(:checker_mal, :unapproved_asset_basepath, "/mal_unapproved_assets") <> "/css/app.css") %>"/>
+    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, Application.get_env(:checker_mal, :unapproved_asset_basepath, "/mal_unapproved_assets") <> "/js/app.js") %>"></script>
   </head>
   <body>
     <header></header>

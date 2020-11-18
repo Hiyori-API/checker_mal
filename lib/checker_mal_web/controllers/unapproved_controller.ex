@@ -32,26 +32,19 @@ defmodule CheckerMalWeb.UnapprovedController do
                 []
             end
 
-          stringify_type(type)
-          |> Map.merge(%{
+          %{
             :since_update_mins =>
               div(NaiveDateTime.diff(NaiveDateTime.utc_now(), last_updated_naive), 60),
             :ids => ids
-          })
+          }
 
         {:error, err} ->
           case err do
             :uninitialized ->
-              Map.merge(
-                %{error: @error_msg},
-                stringify_type(type)
-              )
+              %{error: @error_msg}
 
             :genserver_timeout ->
-              Map.merge(
-                %{warning: @update_msg},
-                stringify_type(type)
-              )
+              %{warning: @update_msg}
           end
       end
 
@@ -113,8 +106,12 @@ defmodule CheckerMalWeb.UnapprovedController do
 
     data =
       Map.put(data, :info, entryinfo)
-      |> Map.put(:title, "Unapproved MAL Entries - #{data[:type] |> String.capitalize()}")
+      |> Map.put(
+        :title,
+        "Unapproved MAL Entries - #{Atom.to_string(type) |> String.capitalize()}"
+      )
       |> Map.put(:basepath, @html_basepath)
+      |> Map.merge(stringify_type(type))
 
     {conn, data}
   end

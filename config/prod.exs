@@ -16,7 +16,7 @@ config :checker_mal, CheckerMalWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 config :checker_mal,
-  mal_wait_time: 15
+  mal_wait_time: 20
 
 # Do not print debug messages in production
 # config :logger, level: :info

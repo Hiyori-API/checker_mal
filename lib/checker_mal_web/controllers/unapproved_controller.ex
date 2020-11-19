@@ -4,7 +4,7 @@ defmodule CheckerMalWeb.UnapprovedController do
 
   @html_basepath Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved")
 
-  @error_msg "Server is booting; still fetching IDs, try again in a minute..."
+  @error_msg "Page is currently being updated, try again in a minute..."
 
   defp get_data(type, conn) do
     stype = Atom.to_string(type)
@@ -28,15 +28,15 @@ defmodule CheckerMalWeb.UnapprovedController do
           }
 
         {:error, :uninitialized} ->
-          %{error: @error_msg, ids: []}
+          %{ids: []}
       end
 
     # flash error if page is initializing/updating
     conn =
       cond do
-        Map.has_key?(data, :error) ->
+        Enum.empty?(data[:ids]) ->
           conn
-          |> put_flash(:error, data[:error])
+          |> put_flash(:error, @error_msg)
 
         true ->
           conn

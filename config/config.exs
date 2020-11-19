@@ -37,6 +37,12 @@ config :checker_mal,
 config :jikan_ex,
   base_url: "http://localhost:8000/v3/"
 
+# random approved MAL id API
+# config :checker_mal,
+#  random_api_enabled: true,
+#  random_api_check_time: :timer.minutes(10),
+#  random_api_basepath: "/api/mal/random"
+
 config :checker_mal,
   ecto_repos: [CheckerMal.Repo]
 

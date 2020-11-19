@@ -7,6 +7,8 @@ defmodule CheckerMalWeb.UnapprovedController do
   @error_msg "Server is booting; still fetching IDs, try again in a minute..."
 
   defp get_data(type, conn) do
+    stype = Atom.to_string(type)
+
     # last_updated_at returns :error when server is still booting
     data =
       case GenServer.call(CheckerMal.Core.Unapproved, :last_updated_at) do
@@ -44,7 +46,7 @@ defmodule CheckerMalWeb.UnapprovedController do
     entryinfo =
       GenServer.call(
         CheckerMal.UnapprovedHtml.EntryCache,
-        {:get_info, Atom.to_string(type), data[:ids]},
+        {:get_info, stype, data[:ids]},
         :timer.seconds(10)
       )
       |> Map.to_list()
@@ -64,10 +66,10 @@ defmodule CheckerMalWeb.UnapprovedController do
       Map.put(data, :info, entryinfo)
       |> Map.put(
         :title,
-        "Unapproved MAL Entries - #{Atom.to_string(type) |> String.capitalize()}"
+        "Unapproved MAL Entries - #{stype |> String.capitalize()}"
       )
       |> Map.put(:basepath, @html_basepath)
-      |> Map.put(:type, Atom.to_string(type))
+      |> Map.put(:type, stype)
 
     {conn, data}
   end

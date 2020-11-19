@@ -218,7 +218,7 @@ defmodule CheckerMal.Core.Index do
     # if there are no items on the page, exit
     # :infinite would exit here or at the bottom if length(ids_on_page) != 50,
     # since the above add_from_page base case doesn't apply
-    if ids_on_page |> length() == 0 do
+    if Enum.empty?(ids_on_page) do
       {cur_page, new_structs}
     else
       # get the min/max id on page

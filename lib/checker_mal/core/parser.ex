@@ -38,7 +38,7 @@ defmodule CheckerMal.Core.Parser do
 
     floki_rows = Floki.find(document, "div#content div.js-categories-seasonal table tr")
 
-    if floki_rows |> length() == 0 do
+    if Enum.empty?(floki_rows) do
       []
     else
       floki_rows

@@ -6,7 +6,7 @@ defmodule CheckerMal.Core.Scheduler do
 
   all requests to update page ranges should come through
   here, since this implements a locking mechanism to
-  prevent muliple jobs from running concurrently
+  prevent multiple jobs from running concurrently
 
   State includes:
     anime: [anime page data (from db)]
@@ -21,7 +21,7 @@ defmodule CheckerMal.Core.Scheduler do
   how many pages were checked
 
   any other requests made while there this is locked will wait in
-  an aquire. up to the callee on how to handle retrying trying to
+  an acquire. up to the callee on how to handle retrying trying to
   do that in a handle_call and GenServer timeout occurs
   """
 
@@ -64,7 +64,7 @@ defmodule CheckerMal.Core.Scheduler do
     state = Map.merge(state, read_state())
     expired_ranges = check_expired(state)
     # this doesn't schedule check here, since if a task takes more than @loop_period
-    # that would mean lots of :check requests would attempt to aquire the lock
+    # that would mean lots of :check requests would attempt to acquire the lock
     # instead, that schedule is done in finished_requesting
     #
     # if we can acquire, this means theres nothing else running
@@ -91,8 +91,8 @@ defmodule CheckerMal.Core.Scheduler do
       # process one job
       {type, timeframe} = expired_ranges |> hd()
       # spawn a process and run update there
-      # aquire the lock, so multiple don't run concurrently
-      # and this doesn't block the genserver waiting to aquire the lock
+      # acquire the lock, so multiple don't run concurrently
+      # and this doesn't block the genserver waiting to acquire the lock
       # link with child process, this genserver crashes/restarts if that crashes
       # the lock is released in :finished_requesting
       {:ok, _task} =

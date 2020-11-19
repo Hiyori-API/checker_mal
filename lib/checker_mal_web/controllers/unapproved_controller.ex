@@ -23,7 +23,7 @@ defmodule CheckerMalWeb.UnapprovedController do
     data =
       case last_updated do
         {:ok, last_updated_naive} ->
-          # if we recieved this, the GenServer probably wouldn't be blocked by some other request
+          # if we received this, the GenServer probably wouldn't be blocked by some other request
           ids =
             try do
               GenServer.call(CheckerMal.UnapprovedHtml.Cache, type)

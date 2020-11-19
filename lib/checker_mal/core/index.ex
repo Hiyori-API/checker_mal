@@ -31,7 +31,7 @@ defmodule CheckerMal.Core.Index do
   require Logger
 
   @doc """
-  Recieves requests to update pages
+  Receives requests to update pages
 
   Reads from the source backend
   Requests number of pages using stop strategy,
@@ -332,8 +332,8 @@ defmodule CheckerMal.Core.Index do
             # set to infinite, will also mark unapproved as done
             # this is probably only going to happen the first time something
             # is indexed, or when the last entry ID on MAL is approved
-            # TODO: change return value to propogate infinite back to scheduler? Its such
-            # a nice case that I don't think its required
+            # TODO: change return value to propagate infinite back to scheduler? Its such
+            # a niche case that I don't think its required
             {cur_page + 5, :infinite}
           else
             {updated_till_page, stop_strategy}

@@ -95,20 +95,19 @@ defmodule CheckerMal.Core.Scheduler do
       # and this doesn't block the genserver waiting to acquire the lock
       # link with child process, this genserver crashes/restarts if that crashes
       # the lock is released in :finished_requesting
-      {:ok, _task} =
-        Task.start_link(fn ->
-          Index.request(
-            type,
-            timeframe,
-            fn page_count, stop_strategy, type ->
-              GenServer.call(
-                CheckerMal.Core.Scheduler,
-                {:finished_requesting, page_count, stop_strategy, type},
-                :timer.minutes(1)
-              )
-            end
-          )
-        end)
+      spawn_link(fn ->
+        Index.request(
+          type,
+          timeframe,
+          fn page_count, stop_strategy, type ->
+            GenServer.call(
+              CheckerMal.Core.Scheduler,
+              {:finished_requesting, page_count, stop_strategy, type},
+              :timer.minutes(1)
+            )
+          end
+        )
+      end)
 
       %{state | lock: true}
     else

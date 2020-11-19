@@ -16,7 +16,7 @@ defmodule CheckerMal.UnapprovedHtml.Cache do
   end
 
   def init(init_state \\ %{}) do
-    schedule_check(:timer.seconds(3))
+    schedule_check(:timer.seconds(1))
     {:ok, init_state}
   end
 
@@ -45,7 +45,9 @@ defmodule CheckerMal.UnapprovedHtml.Cache do
   end
 
   def update_id_cache(state) do
-    # Wrapper.get_all_anime updates the data if its has expired
+    # wait till unapproved GenServer has parsed results
+    Wrapper.wait_till_parsed()
+
     state =
       Map.merge(state, %{
         "unapproved_anime_ids" => Wrapper.get_all_anime() |> MapSet.new(),

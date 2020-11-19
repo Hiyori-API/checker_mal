@@ -305,6 +305,8 @@ defmodule CheckerMal.Core.Index do
               new_till_page
 
             :unapproved ->
+              Wrapper.wait_till_parsed()
+
               # this returns a bool, not an integer. the bool is matched in the unapproved base case pattern above
               case type do
                 :anime ->

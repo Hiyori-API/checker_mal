@@ -49,7 +49,7 @@ defmodule CheckerMal.Core.Parser do
   end
 
   defp debug_first(parsed_trs) when is_list(parsed_trs) do
-    Logger.info(
+    Logger.debug(
       "First item from response: " <> (parsed_trs |> hd() |> Tuple.to_list() |> Enum.join(" "))
     )
 

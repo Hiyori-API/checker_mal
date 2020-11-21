@@ -19,8 +19,8 @@ config :checker_mal,
   mal_wait_time: 20
 
 # Do not print debug messages in production
-# config :logger, level: :info
-config :logger, level: :debug
+config :logger, level: :info
+# config :logger, level: :debug
 
 # ## SSL Support
 #

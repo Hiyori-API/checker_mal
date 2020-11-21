@@ -13,7 +13,6 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 - [x] (**Core**) Maintain an up-to-date cache of anime (and manga) IDs on MAL
 - [x] Calculate unapproved items and display them as HTML (replace [this](https://github.com/seanbreckenridge/mal-unapproved))
 - [ ] An API for random anime/manga IDs
-- [ ] A feed of recently approved anime/manga as HTML, provide data for [this](https://github.com/seanbreckenridge/mal-notify-bot)
 
 ---
 

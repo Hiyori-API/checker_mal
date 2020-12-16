@@ -66,7 +66,7 @@ defmodule CheckerMal.Core.Scraper do
   end
 
   defp handle_backoff(req_func, times, giveup, err) do
-    Logger.warning("Request failed, waiting and retrying...")
+    Logger.warn("Request failed, waiting and retrying...")
     Logger.error(err)
 
     if times >= giveup do

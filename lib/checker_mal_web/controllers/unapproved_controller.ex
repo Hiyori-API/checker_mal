@@ -4,7 +4,7 @@ defmodule CheckerMalWeb.UnapprovedController do
 
   @html_basepath Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved")
 
-  @error_msg "Page is currently being updated, try again in a minute..."
+  @error_msg "Page is currently being updated, this page will automatically refresh when its done..."
 
   defp get_data(type, conn) do
     stype = Atom.to_string(type)
@@ -28,7 +28,7 @@ defmodule CheckerMalWeb.UnapprovedController do
           }
 
         {:error, :uninitialized} ->
-          %{ids: []}
+          %{ids: [], refresh_equiv: true}
       end
 
     # flash error if page is initializing/updating

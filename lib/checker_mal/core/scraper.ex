@@ -36,7 +36,7 @@ defmodule CheckerMal.Core.Scraper do
     # if HTTP error occurs, wait/sleep and recurse
     http_resp =
       rated_http_recurse(fn ->
-        HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.seconds(30)))
+        HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.minutes(1)))
       end)
 
     # call the function to update when this rate limit was last used
@@ -66,6 +66,7 @@ defmodule CheckerMal.Core.Scraper do
   end
 
   defp handle_backoff(req_func, times, giveup, err) do
+    Logger.warning("Request failed, waiting and retrying...")
     Logger.error(err)
 
     if times >= giveup do

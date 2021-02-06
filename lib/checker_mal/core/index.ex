@@ -9,7 +9,7 @@ defmodule CheckerMal.Core.FeedItem do
   # the type (anime/manga) and rating (sfw/nsfw)
   # arent needed here since they're passed around
   # as arguments from the scheduler to the backend,
-  # so it would just be dupliting info
+  # so it would just be duplicating info
   defstruct mal_id: -1,
             action: :added
 end
@@ -18,7 +18,7 @@ defmodule CheckerMal.Core.Index do
   @moduledoc """
   Checks for new anime/manga entries on MAL
 
-  This module should be backend agnostic, doesnt matter if youre fetching
+  This module should be backend agnostic, doesn't matter if you're fetching
   items from mongodb and sending requests back, or loading local files
   and writing back changes
   """

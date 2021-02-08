@@ -47,7 +47,7 @@ defmodule CheckerMal.Core.Unapproved do
   # doesnt use state since the results from the scraper and
   # keys the map is merged with accounts for all of the state
   def handle_cast({:update_results, scraper_resp}, _state) do
-  # marks the time and is_updating keys when unapproved page is finished updating
+    # marks the time and is_updating keys when unapproved page is finished updating
     {:noreply,
      scraper_resp
      |> Map.merge(%{

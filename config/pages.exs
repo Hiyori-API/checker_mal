@@ -21,7 +21,7 @@ end
 config :checker_mal,
   anime_pages: [
     {3, T.ms_to_s(:timer.hours(1))},
-    {10, T.ms_to_s(:timer.hours(8))},
+    {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(4))},
     {40, T.ms_to_s(T.days(10))},
     {100, T.ms_to_s(T.days(40))},
@@ -30,7 +30,7 @@ config :checker_mal,
   ],
   manga_pages: [
     {3, T.ms_to_s(:timer.hours(1))},
-    {10, T.ms_to_s(:timer.hours(8))},
+    {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(4))},
     {40, T.ms_to_s(T.days(10))},
     {100, T.ms_to_s(T.days(40))},

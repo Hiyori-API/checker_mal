@@ -43,7 +43,8 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   def init(init_state \\ %{}) do
-    state = Map.merge(init_state, %{lock: false})
+    state = Map.merge(init_state, %{lock: false, requests: []})
+
     # create any missing page ranges, if needed
     init_db()
     # so this doesn't stop initial startup process
@@ -62,7 +63,10 @@ defmodule CheckerMal.Core.Scheduler do
   def maintenance(state) do
     Logger.debug("ID Checker: Checking if any page ranges have expired...")
     state = Map.merge(state, read_state())
+
+    # check if any have expired based on time
     expired_ranges = check_expired(state)
+
     # this doesn't schedule check here, since if a task takes more than @loop_period
     # that would mean lots of :check requests would attempt to acquire the lock
     # instead, that schedule is done in finished_requesting
@@ -76,43 +80,55 @@ defmodule CheckerMal.Core.Scheduler do
         state
       end
 
+    # same here, but checking if theres nothing currently running, and theres
+    # a HTTP request waiting in ':requests' key, run that instead
+    state =
+      if not state[:lock] and length(state[:requests]) > 0 do
+        # pop the item off the keyword list
+        [new_req | new_state_requests] = state[:requests]
+        # attach tail of list to new requests, and cast like usual
+        cast_pages(%{state | requests: new_state_requests}, [new_req])
+      else
+        state
+      end
+
     # reschedule
     schedule_check()
     state
   end
 
-  defp cast_pages(state, expired_ranges) do
-    if length(expired_ranges) > 0 do
-      # I think this should be fine, this is only going to care
-      # about the SFW request sending the page range back to finished_requesting
-      # otherwise, there are 11x as more SFW entries anyways, so NSFW should
-      # always be checked well enough
-      #
-      # process one job
-      {type, timeframe} = expired_ranges |> hd()
-      # spawn a process and run update there
-      # acquire the lock, so multiple don't run concurrently
-      # and this doesn't block the genserver waiting to acquire the lock
-      # link with child process, this genserver crashes/restarts if that crashes
-      # the lock is released in :finished_requesting
-      spawn_link(fn ->
-        Index.request(
-          type,
-          timeframe,
-          fn page_count, stop_strategy, type ->
-            GenServer.call(
-              CheckerMal.Core.Scheduler,
-              {:finished_requesting, page_count, stop_strategy, type},
-              :timer.minutes(1)
-            )
-          end
-        )
-      end)
+  defp cast_pages(state, expired_ranges) when length(expired_ranges) == 0, do: state
 
-      %{state | lock: true}
-    else
-      state
-    end
+  defp cast_pages(state, expired_ranges) do
+    # I think this should be fine, this is only going to care
+    # about the SFW request sending the page range back to finished_requesting
+    # otherwise, there are 11x as more SFW entries anyways, so NSFW should
+    # always be checked well enough
+    #
+    # process one job
+    #
+    # (:anime/:manga), timeframe as string
+    {type, timeframe} = expired_ranges |> hd()
+    # spawn a process and run update there
+    # acquire the lock, so multiple don't run concurrently
+    # and this doesn't block the genserver waiting to acquire the lock
+    # link with child process, this genserver crashes/restarts if that crashes
+    # the lock is released in :finished_requesting
+    spawn_link(fn ->
+      Index.request(
+        type,
+        timeframe,
+        fn page_count, stop_strategy, type ->
+          GenServer.call(
+            CheckerMal.Core.Scheduler,
+            {:finished_requesting, page_count, stop_strategy, type},
+            :timer.minutes(1)
+          )
+        end
+      )
+    end)
+
+    %{state | lock: true}
   end
 
   @doc """
@@ -205,9 +221,10 @@ defmodule CheckerMal.Core.Scheduler do
     Config.find_smaller_in_range(page_count, stop_strategy, type)
     |> Enum.map(fn timeframe ->
       update_query =
-        from pd in PageStateData,
+        from(pd in PageStateData,
           where: pd.type == ^Config.stringify_key(type) and pd.timeframe == ^timeframe,
           update: [set: [updated_at: ^NaiveDateTime.utc_now()]]
+        )
 
       CheckerMal.Repo.update_all(update_query, [])
     end)
@@ -215,6 +232,20 @@ defmodule CheckerMal.Core.Scheduler do
 
   def handle_call({:finished_requesting, page_count, stop_strategy, type}, _from, state) do
     {:reply, finished_requesting(page_count, stop_strategy, type), %{state | lock: false}}
+  end
+
+  @doc """
+  Append a request to run a request for anime/manga for a certain number of pages
+  this is typically called by using the HTTP route
+
+  Just append to the :requests key and let it run
+  the next time the state is checked in maintenance
+  """
+  def handle_call({:add_http_request, page_count, type}, _from, state)
+      when is_atom(type) and is_number(page_count) do
+    new_req = {type, page_count}
+    Logger.info("Accepted request to index #{Atom.to_string(type)} for #{page_count} pages")
+    {:reply, :ok, %{state | requests: [new_req | state[:requests]]}}
   end
 end
 

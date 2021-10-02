@@ -28,3 +28,11 @@ This can be run with `mix run --no-halt` or `mix phx.server`; I'd recommend usin
 - Start Phoenix endpoint with `mix phx.server`
 
 Server is hosted on `localhost:4001`.
+
+---
+
+Includes a basic HTTP API to request more pages to be requested (since sometimes it takes a few days to check as far back as you may want). Those can be triggered by sending GET requests like:
+
+`http://localhost:4001/api/pages?type=anime&pages=15`
+`http://localhost:4001/api/pages?type=anime&pages=30`
+`http://localhost:4001/api/pages?type=manga&pages=100`

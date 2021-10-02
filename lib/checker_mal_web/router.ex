@@ -31,9 +31,11 @@ defmodule CheckerMalWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", CheckerMalWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", CheckerMalWeb do
+    pipe_through :api
+
+    get "/pages/", RequestPagesController, :request
+  end
 
   # Enables LiveDashboard only for development
   #

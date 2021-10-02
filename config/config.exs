@@ -27,8 +27,9 @@ import_config "pages.exs"
 # unapproved_check_time: time between checking if theres a new cache in checker_mal
 # html_basepath: where pages should be served
 # asset_basepath: where assets (css/js) should be served
+
 config :checker_mal,
-  unapproved_html_enabled: true,
+  unapproved_html_enabled: is_nil(System.get_env("UNAPPROVED_HTML_DISABLED")),
   unapproved_check_time: :timer.minutes(5),
   unapproved_html_basepath: "/mal_unapproved",
   unapproved_asset_basepath: "/mal_unapproved_assets"

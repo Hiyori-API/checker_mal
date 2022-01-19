@@ -117,27 +117,27 @@ defmodule CheckerMal.Core.URL do
 
   @doc """
     iex> CheckerMal.Core.URL.anime_page(3) |> CheckerMal.Core.URL.sfw()
-    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre[]=12&gx=1"
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre_ex[]=12"
   """
   def sfw(base_url) do
-    base_url <> "&genre[]=12&gx=1"
+    base_url <> "&genre_ex[]=12"
   end
 
   @doc """
     iex> CheckerMal.Core.URL.anime_page(1) |> CheckerMal.Core.URL.nsfw()
-    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre[]=12&gx=0"
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre[]=12"
   """
   def nsfw(base_url) do
-    base_url <> "&genre[]=12&gx=0"
+    base_url <> "&genre[]=12"
   end
 
   @doc """
   Helper to build a URL, given a type, rating and a page
 
     iex> CheckerMal.Core.URL.build_url(:anime, :sfw, 1)
-    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre[]=12&gx=1"
+    "https://myanimelist.net/anime.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&genre_ex[]=12"
     iex> URL.build_url(:manga, :nsfw, 3)
-    "https://myanimelist.net/manga.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre[]=12&gx=0"
+    "https://myanimelist.net/manga.php?q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2&show=100&genre[]=12"
   """
   def build_url(type, rating, page) when is_atom(type) and is_atom(rating) and is_integer(page) do
     base_url =

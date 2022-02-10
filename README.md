@@ -23,7 +23,7 @@ This can be run with `mix run --no-halt` or `mix phx.server`; I'd recommend usin
 
 - Install dependencies with `mix deps.get`
 - Create and migrate your database with `mix ecto.setup`
-- Install Node.js dependencies with `npm install` inside the `assets` directory
+- Install Node.js dependencies with `yarn` inside the `assets` directory
 - Start Phoenix endpoint with `mix phx.server`
 
 Server is hosted on `localhost:4001`.

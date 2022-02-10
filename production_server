@@ -6,6 +6,9 @@ DATABASE_URL="${CHECKER_MAL_URI:?No CHECKER_MAL_URI environment variable set}"
 MIX_ENV=prod
 declare -rx DATABASE_URL CHECKER_MAL_SECRET MIX_ENV
 
+THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+cd "${THIS_DIR}" || exit $?
+
 case "$1" in
 # drop into an interactive shell after loading environment secrets
 --shell)
@@ -33,6 +36,8 @@ mix deps.get --only prod
 mix compile
 mix ecto.create
 
-npm install --prefix ./assets 2>/dev/null
-npm run deploy --prefix ./assets 2>/dev/null
+cd ./assets/
+yarn install
+yarn deploy
+cd "${THIS_DIR}" || exit $?
 exec mix prod.server

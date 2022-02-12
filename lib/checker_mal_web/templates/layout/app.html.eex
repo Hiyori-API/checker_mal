@@ -7,6 +7,11 @@
     <%= if @data && @data[:refresh_equiv] do %>
       <meta http-equiv="refresh" content="5">
     <% end %>
+    <%= if Application.get_env(:checker_mal, :back_arrow, false) do %>
+      <meta property="ba:title" content="home page" />
+      <meta property="ba:url" content="/" />
+      <meta property="ba:color" content="grey" />
+    <% end %>
     <title>
       <%= if @data && @data[:title] do %>
         <%= @data[:title] %>
@@ -25,5 +30,8 @@
       <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
       <%= @inner_content %>
     </main>
+    <%= if Application.get_env(:checker_mal, :back_arrow, false) do %>
+      <script src="https://sean.fish/p/back-arrow-bundle.js"></script>
+    <% end %>
   </body>
 </html>

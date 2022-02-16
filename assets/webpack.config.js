@@ -3,15 +3,14 @@ const glob = require("glob");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = (env, options) => {
   const devMode = options.mode !== "production";
 
   return {
     optimization: {
-      minimizer: [
-        new OptimizeCSSAssetsPlugin({}),
-      ],
+      minimizer: [new OptimizeCSSAssetsPlugin({}), new TerserPlugin({})],
     },
     entry: {
       app: glob.sync("./vendor/**/*.js").concat(["./js/app.js"]),
@@ -39,7 +38,7 @@ module.exports = (env, options) => {
     },
     plugins: [
       new MiniCssExtractPlugin({ filename: "../css/app.css" }),
-      new CopyWebpackPlugin({patterns: [{ from: "static/", to: "../" }]}),
-    ]
+      new CopyWebpackPlugin({ patterns: [{ from: "static/", to: "../" }] }),
+    ],
   };
 };

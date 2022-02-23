@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # TODO: copy this into test.exs so doctests run the same?
 

@@ -40,6 +40,7 @@ The `name`, `nsfw` and `type` fields are all nullable -- they might by `null` if
 There are public, CORS-friendly API routes at:
 
 <https://sean.fish/mal_unapproved/api/anime>
+
 <https://sean.fish/mal_unapproved/api/manga>
 
 ---

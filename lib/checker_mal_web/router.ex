@@ -37,6 +37,19 @@ defmodule CheckerMalWeb.Router do
     get "/pages/", RequestPagesController, :request
   end
 
+  @unapproved_api Application.get_env(
+                    :checker_mal,
+                    :unapproved_api_basepath,
+                    "/mal_unapproved/api"
+                  )
+
+  scope @unapproved_api, CheckerMalWeb do
+    pipe_through :api
+
+    get "/anime/", UnapprovedAPIController, :anime
+    get "/manga/", UnapprovedAPIController, :manga
+  end
+
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put

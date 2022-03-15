@@ -12,10 +12,24 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 
 - [x] (**Core**) Maintain an up-to-date cache of anime (and manga) IDs on MAL
 - [x] Calculate unapproved items and display them as HTML (replace [this](https://github.com/seanbreckenridge/mal-unapproved))
+- [x] Create an API for unapproved items
 
 ---
 
 The Unapproved HTML webapp can be enabled/disabled in the [config](config/config.exs). Expects a Jikan instance to be running on port 8000 (port can also be modified in config)
+
+The Unapproved API returns similar data to the HTML. While the server is booting (the first couple seconds), it may send error codes (some HTTP error larger than 400) due to timeouts
+
+Afterwards, it returns a list of items, as an example:
+
+```json
+{
+  "id": 45383,
+  "name": "Crepuscule (Yamachi)",
+  "nsfw": false,
+  "type": "Manga"
+}
+```
 
 ---
 

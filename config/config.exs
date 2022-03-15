@@ -33,6 +33,7 @@ config :checker_mal,
   unapproved_html_enabled: is_nil(System.get_env("UNAPPROVED_HTML_DISABLED")),
   unapproved_check_time: :timer.minutes(5),
   unapproved_html_basepath: "/mal_unapproved",
+  unapproved_api_basepath: "/mal_unapproved/api",
   unapproved_asset_basepath: "/mal_unapproved_assets"
 
 # jikan, used for the unapproved html page

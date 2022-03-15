@@ -16,11 +16,15 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 
 ---
 
+## Unapproved HTML
+
 The Unapproved HTML webapp can be enabled/disabled in the [config](config/config.exs). Expects a Jikan instance to be running on port 8000 (port can also be modified in config)
 
-The Unapproved API returns similar data to the HTML. While the server is booting (the first couple seconds), it may send error codes (some HTTP error larger than 400) due to timeouts
+---
 
-Afterwards, it returns a list of items, as an example:
+The Unapproved API returns similar data to the HTML. While the server is booting (the first couple seconds, while its requesting the unapproved HTML page for the first time), it may send HTTP errors (some HTTP code >=400) due to timeouts
+
+It returns items similar to the HTML, like:
 
 ```json
 {
@@ -30,6 +34,13 @@ Afterwards, it returns a list of items, as an example:
   "type": "Manga"
 }
 ```
+
+The `name`, `nsfw` and `type` fields are all nullable -- they might by `null` if the data for it has to yet to be cached.
+
+There are public, CORS-friendly API routes at:
+
+<https://sean.fish/mal_unapproved/api/anime>
+<https://sean.fish/mal_unapproved/api/manga>
 
 ---
 

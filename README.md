@@ -43,6 +43,8 @@ There are public, CORS-friendly API routes at:
 
 <https://sean.fish/mal_unapproved/api/manga>
 
+You can also limit how many are returned, if you just want the top <https://sean.fish/mal_unapproved/api/anime?limit=50>
+
 ---
 
 This can be run with `mix run --no-halt` or `mix phx.server`; I'd recommend using the [`./production_server`](./production_server) script to make sure secrets are set properly, see [`config/prod.secret.exs`](./config/prod.secret.exs) for the required environment variables.

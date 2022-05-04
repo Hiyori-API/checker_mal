@@ -2,6 +2,9 @@ name: Elixir CI
 
 on: push
 
+env:
+  MAL_CLIENTID: x
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -41,8 +44,6 @@ jobs:
           mix local.hex --force
           mix deps.get
           npm install --prefix ./assets
-        env:
-          MAL_CLIENTID: x
 
       - name: Run tests
         run: |
@@ -51,4 +52,3 @@ jobs:
           mix test --trace
         env:
           MIX_ENV: test
-          MAL_CLIENTID: x

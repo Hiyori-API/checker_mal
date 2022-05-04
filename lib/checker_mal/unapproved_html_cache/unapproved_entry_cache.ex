@@ -94,8 +94,8 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   end
 
   defp save_resp_to_db(type, id, resp) when is_bitstring(type) do
-    name = resp["title"]
-    etype = resp["media_type"]
+    name = resp["title"] || "Unknown"
+    etype = resp["media_type"] || "Unknown"
     genre_ids = Enum.map(resp["genres"] || [], fn %{"id" => genre_id} -> genre_id end)
     nsfw = 12 in genre_ids
 

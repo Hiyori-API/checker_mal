@@ -29,7 +29,7 @@ defmodule CheckerMalWeb.UnapprovedController do
     end
   end
 
-  def convert_media_type(nil), do: "Unknown"
+  def convert_media_type(nil), do: nil
 
   def convert_media_type(type) when is_bitstring(type) do
     case type do

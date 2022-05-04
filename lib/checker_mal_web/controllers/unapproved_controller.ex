@@ -29,6 +29,55 @@ defmodule CheckerMalWeb.UnapprovedController do
     end
   end
 
+  def convert_media_type(type) when is_bitstring(type) do
+    case type do
+      "doujinshi" ->
+        "Doujinshi"
+
+      "light_novel" ->
+        "Light Novel"
+
+      "manga" ->
+        "Manga"
+
+      "one_shot" ->
+        "One Shot"
+
+      "manhwa" ->
+        "Manhwa"
+
+      "manhua" ->
+        "Manhua"
+
+      "novel" ->
+        "Novel"
+
+      "tv" ->
+        "TV"
+
+      "ova" ->
+        "OVA"
+
+      "special" ->
+        "Special"
+
+      "movie" ->
+        "Movie"
+
+      "unknown" ->
+        "Unknown"
+
+      "music" ->
+        "Music"
+
+      "ona" ->
+        "ONA"
+
+      _ ->
+        type
+    end
+  end
+
   def fetch_metadata(stype, ids) when is_bitstring(stype) and is_list(ids) do
     GenServer.call(
       CheckerMal.UnapprovedHtml.EntryCache,
@@ -40,7 +89,7 @@ defmodule CheckerMalWeb.UnapprovedController do
       {id,
        %{
          :name => name,
-         :type => etype,
+         :type => convert_media_type(etype),
          :nsfw => nsfw
        }}
     end)

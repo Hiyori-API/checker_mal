@@ -35,6 +35,7 @@ defmodule CheckerMalWeb.Router do
     pipe_through :api
 
     get "/pages/", RequestPagesController, :request
+    get "/debug/", RequestPagesController, :debug
   end
 
   @unapproved_api Application.get_env(

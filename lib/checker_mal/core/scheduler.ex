@@ -43,7 +43,7 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   def init(init_state \\ %{}) do
-    state = Map.merge(init_state, %{lock: false, requests: []})
+    state = Map.merge(init_state, %{lock: false, current_request: nil, requests: []})
 
     # create any missing page ranges, if needed
     init_db()
@@ -128,7 +128,7 @@ defmodule CheckerMal.Core.Scheduler do
       )
     end)
 
-    %{state | lock: true}
+    %{state | lock: true, current_request: %{type: type, timeframe: timeframe}}
   end
 
   @doc """
@@ -231,7 +231,13 @@ defmodule CheckerMal.Core.Scheduler do
   end
 
   def handle_call({:finished_requesting, page_count, stop_strategy, type}, _from, state) do
-    {:reply, finished_requesting(page_count, stop_strategy, type), %{state | lock: false}}
+    {:reply, finished_requesting(page_count, stop_strategy, type),
+     %{state | lock: false, current_request: nil}}
+  end
+
+  def handle_call(:debug_state, _from, state) do
+    # send entire state to callee
+    {:reply, state, state}
   end
 
   @doc """

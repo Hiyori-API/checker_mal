@@ -5,7 +5,8 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   use GenServer
   require Logger
 
-  @loop_period :timer.seconds(Application.get_env(:checker_mal, :mal_wait_time, 15))
+  @loop_period :timer.seconds(Application.get_env(:checker_mal, :entrycache_wait, 2))
+  @api_key Application.get_env(:checker_mal, :mal_api_key)
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -14,11 +15,14 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   def init(init_state \\ %{}) do
     schedule_check()
 
+    if is_nil(@api_key) do
+      raise "No API key set, set the MAL_CLIENTID environment variable"
+    end
+
     state =
       Map.merge(init_state, %{
         :cached => read_cache_from_db(),
-        :uncached => [],
-        :client => JikanEx.client()
+        :uncached => []
       })
 
     {:ok, state}
@@ -60,10 +64,21 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
       [{type, id} | rest_uncached] = state[:uncached]
 
       cache =
-        case request_data(state[:client], type, id) do
+        case request_data(type, id) do
           {:ok, resp} ->
-            {name, etype, nsfw} = save_resp_to_db(type, id, resp)
-            Map.put(state[:cached], {type, id}, {name, etype, nsfw})
+            case resp.status_code do
+              200 ->
+                resp_json = Jason.decode!(resp.body)
+                {name, etype, nsfw} = save_resp_to_db(type, id, resp_json)
+                Map.put(state[:cached], {type, id}, {name, etype, nsfw})
+
+              _ ->
+                Logger.warn(
+                  "EntryCache: Could not cache #{type} #{id}, failed with #{resp.status_code} ignoring..."
+                )
+
+                state[:cached]
+            end
 
           {:error, _err} ->
             Logger.warn("EntryCache: Could not cache #{type} #{id}, ignoring...")
@@ -80,8 +95,9 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
 
   defp save_resp_to_db(type, id, resp) when is_bitstring(type) do
     name = resp["title"]
-    etype = resp["type"]
-    nsfw = 12 in Enum.map(resp["genres"], fn %{"mal_id" => genre_id} -> genre_id end)
+    etype = resp["media_type"]
+    genre_ids = Enum.map(resp["genres"] || [], fn %{"id" => genre_id} -> genre_id end)
+    nsfw = 12 in genre_ids
 
     {:ok, _} =
       MALEntry.create_mal_entry_data(%{
@@ -92,14 +108,20 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
         :type => type
       })
 
+    Logger.info("Saved #{name} (#{etype}) #{nsfw}")
+
     {name, etype, nsfw}
   end
 
-  defp request_data(jikan_client, type, id) when is_bitstring(type),
-    do: request_data(jikan_client, string_to_req_atom(type), id)
+  defp request_data(type, id) when is_bitstring(type) do
+    url =
+      "https://api.myanimelist.net/v2/#{type}/#{id}?nsfw=true&fields=id,title,nsfw,genres,media_type"
 
-  defp request_data(jikan_client, type, id) when is_atom(type),
-    do: apply(JikanEx.Request, type, [jikan_client, id])
+    HTTPoison.get(url, [{"X-MAL-CLIENT-ID", @api_key}])
+  end
+
+  defp request_data(:anime, id), do: request_data("anime", id)
+  defp request_data(:manga, id), do: request_data("manga", id)
 
   defp remove_uncached_from_head(state) do
     Map.put(
@@ -112,9 +134,6 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   defp in_cache?(state, {type, id}) when is_bitstring(type) do
     Map.has_key?(state[:cached], {type, id})
   end
-
-  defp string_to_req_atom("anime"), do: :anime
-  defp string_to_req_atom("manga"), do: :manga
 
   def handle_call({:get_info, type, ids}, _from, state)
       when is_list(ids) and is_bitstring(type) do

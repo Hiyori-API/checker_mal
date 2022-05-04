@@ -36,4 +36,21 @@ defmodule CheckerMalWeb.RequestPagesController do
   defp convert_type("anime"), do: :anime
   defp convert_type("manga"), do: :manga
   defp convert_type(_), do: nil
+
+  def debug(conn, _params) do
+    state = GenServer.call(CheckerMal.Core.Scheduler, :debug_state)
+    json(conn, state)
+  end
+end
+
+defmodule TupleEncoder do
+  alias Jason.Encoder
+
+  defimpl Encoder, for: Tuple do
+    def encode(data, options) when is_tuple(data) do
+      data
+      |> Tuple.to_list()
+      |> Encoder.List.encode(options)
+    end
+  end
 end

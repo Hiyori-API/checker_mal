@@ -24,7 +24,7 @@ config :checker_mal,
     {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(4))},
     {40, T.ms_to_s(T.days(10))},
-    {100, T.ms_to_s(T.days(40))},
+    {100, T.ms_to_s(T.days(20))},
     # {:unapproved, T.ms_to_s(T.days(28))},
     {:infinite, T.ms_to_s(T.days(30))}
   ],

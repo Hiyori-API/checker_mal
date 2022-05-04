@@ -41,7 +41,7 @@ defmodule CheckerMalWeb.UnapprovedAPIController do
             id: id,
             name: metadata[:name],
             nsfw: metadata[:nsfw],
-            type: metadata[:type]
+            type: UnapprovedController.convert_media_type(metadata[:type])
           }
         end)
 

@@ -11,9 +11,10 @@ import Config
 config :checker_mal,
   mal_error_wait_time: :timer.minutes(1),
   unapproved_page_expire_time: :timer.hours(3),
+  mal_api_key: System.get_env("MAL_CLIENTID"),
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
   back_arrow: !is_nil(System.get_env("BACK_ARROW")),
-  scheduler_loop_time: :timer.minutes(5),
+  scheduler_loop_time: :timer.minutes(1),
   source_backend: :txt,
   enabled_backends: [:txt]
 
@@ -35,10 +36,6 @@ config :checker_mal,
   unapproved_html_basepath: "/mal_unapproved",
   unapproved_api_basepath: "/mal_unapproved/api",
   unapproved_asset_basepath: "/mal_unapproved_assets"
-
-# jikan, used for the unapproved html page
-config :jikan_ex,
-  base_url: "http://localhost:8000/v3/"
 
 # random approved MAL id API
 # config :checker_mal,

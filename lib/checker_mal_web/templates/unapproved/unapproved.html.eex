@@ -6,7 +6,7 @@
   </div>
   <br />
   <div>
-    Whenever an entry requested to be added (by a user), it gets an ID and is listed "on the website" - unlisted; at this point no one can add it to their list. If its approved it keeps that ID, else it becomes a 404. This acts as a index to check if you're submitting a duplicate, and to keep track of the current backlog. See the GitHub repo (top right) for more info.
+    Whenever an entry requested to be added (by a user), it gets an ID and is listed "on the website" - unlisted; at this point no one can add it to their list. If its approved it keeps that ID, else it becomes a 404. This acts as a index to check if you're submitting a duplicate, and to keep track of the current backlog. See the GitHub repo (top right) for more info and API usage.
   </div>
   <div class="buttons">
     <a class="button" href="<%= @data[:basepath] <> "/anime" %>">

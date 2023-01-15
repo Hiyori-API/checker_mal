@@ -12,7 +12,7 @@ mal_id = System.get_env("MAL_CLIENTID") || raise "No MAL_CLIENTID set"
 # mal index config
 config :checker_mal,
   mal_error_wait_time: :timer.minutes(1),
-  unapproved_page_expire_time: :timer.hours(3),
+  unapproved_page_expire_time: :timer.hours(1),
   mal_api_key: mal_id,
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
   back_arrow: !is_nil(System.get_env("BACK_ARROW")),

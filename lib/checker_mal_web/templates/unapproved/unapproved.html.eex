@@ -10,7 +10,7 @@
   </div>
   <br />
   <div>
-    You may also be interested in <a href="https://dbsentinel.sean.fish">DBSentinel</a>, which lists unapproved, deleted, and entries that have denied from MAL [with images]
+    Related: <a href="https://dbsentinel.sean.fish">DBSentinel</a>, which lists unapproved, deleted, and entries that have denied from MAL
   </div>
   <div class="buttons">
     <a class="button" href="<%= @data[:basepath] <> "/anime" %>">

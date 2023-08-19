@@ -5,16 +5,17 @@
 import Config
 
 database_url =
-  System.get_env("DATABASE_PATH") ||
+  Path.expand(System.get_env("DATABASE_PATH")) ||
     raise """
     environment variable DATABASE_PATH is missing.
-    For example: ecto://USER:PASS@HOST/DATABASE
+    this should be a path to the sqlite db
     """
 
 config :checker_mal, CheckerMal.Repo,
   # ssl: true,
-  url: database_url,
-  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+  database: database_url,
+  # dont really need a big pool, everything is stored in memory
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "2")
 
 secret_key_base =
   System.get_env("CHECKER_MAL_SECRET") ||

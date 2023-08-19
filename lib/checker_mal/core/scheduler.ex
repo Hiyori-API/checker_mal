@@ -36,7 +36,7 @@ defmodule CheckerMal.Core.Scheduler do
   use GenServer
 
   @type_keys [:anime, :manga]
-  @loop_period Application.get_env(:checker_mal, :scheduler_loop_time, :timer.minutes(5))
+  @loop_period Application.compile_env(:checker_mal, :scheduler_loop_time, :timer.minutes(5))
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)

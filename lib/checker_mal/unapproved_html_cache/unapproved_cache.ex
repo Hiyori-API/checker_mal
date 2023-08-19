@@ -5,7 +5,7 @@ defmodule CheckerMal.UnapprovedHtml.Cache do
   use GenServer
   require Logger
 
-  @unapproved_check_time Application.get_env(
+  @unapproved_check_time Application.compile_env(
                            :checker_mal,
                            :unapproved_check_time,
                            :timer.minutes(5)

@@ -85,7 +85,7 @@ end
 
 defmodule CheckerMal.Core.URL do
   # all columns, no query, ordered by MAL id, reverse
-  @base_query 'q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2'
+  @base_query ~c"q=&c[0]=a&c[1]=b&c[2]=c&c[3]=d&c[4]=e&c[5]=f&c[6]=g&o=9&w=1&cv=2"
 
   defp page_helper(media_type, page_number) when is_integer(page_number) do
     show_offset = (page_number - 1) * 50

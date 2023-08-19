@@ -19,8 +19,8 @@ defmodule CheckerMalWeb.Router do
     # get "/", PageController, :index
   end
 
-  if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do
-    scope Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved"),
+  if Application.compile_env(:checker_mal, :unapproved_html_enabled, false) do
+    scope Application.compile_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved"),
           CheckerMalWeb do
       pipe_through :browser
 
@@ -38,7 +38,7 @@ defmodule CheckerMalWeb.Router do
     get "/debug/", RequestPagesController, :debug
   end
 
-  @unapproved_api Application.get_env(
+  @unapproved_api Application.compile_env(
                     :checker_mal,
                     :unapproved_api_basepath,
                     "/mal_unapproved/api"

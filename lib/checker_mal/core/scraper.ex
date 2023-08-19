@@ -6,12 +6,15 @@ defmodule CheckerMal.Core.Scraper do
 
   require Logger
 
+  @wait_time Application.compile_env(:checker_mal, :mal_wait_time, 15)
+  @error_wait_time Application.compile_env(:checker_mal, :mal_error_wait_time, :timer.minutes(1))
+
   # returns a function which you should call right before the API is used,
   # to update when that endpoint was last used
   defp wait_for_rate_limit() do
     case GenServer.call(
            CheckerMal.Core.RateLimit,
-           {:check_rate, "MAL", Application.get_env(:checker_mal, :mal_wait_time, 15)}
+           {:check_rate, "MAL", @wait_time}
          ) do
       {:ok, call_func} ->
         call_func
@@ -55,7 +58,7 @@ defmodule CheckerMal.Core.Scraper do
             {:ok, body_text}
 
           true ->
-            Logger.warn("#{req_url} failed with code #{status}:")
+            Logger.warning("#{req_url} failed with code #{status}:")
             handle_backoff(req_func, times, giveup, body_text)
         end
 
@@ -66,13 +69,13 @@ defmodule CheckerMal.Core.Scraper do
   end
 
   defp handle_backoff(req_func, times, giveup, err) do
-    Logger.warn("Request failed, waiting and retrying...")
+    Logger.warning("Request failed, waiting and retrying...")
     Logger.error(err)
 
     if times >= giveup do
       {:error, "Failed too many times..."}
     else
-      :timer.sleep(Application.get_env(:checker_mal, :mal_error_wait_time, :timer.minutes(1)))
+      :timer.sleep(@error_wait_time)
       rated_http_recurse(req_func, times + 1, giveup)
     end
   end

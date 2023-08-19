@@ -2,7 +2,11 @@ defmodule CheckerMalWeb.UnapprovedController do
   use CheckerMalWeb, :controller
   require Logger
 
-  @html_basepath Application.get_env(:checker_mal, :unapproved_html_basepath, "/mal_unapproved")
+  @html_basepath Application.compile_env(
+                   :checker_mal,
+                   :unapproved_html_basepath,
+                   "/mal_unapproved"
+                 )
 
   @error_msg "Page is currently being updated, this page will automatically refresh when its done..."
 

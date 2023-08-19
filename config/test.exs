@@ -6,10 +6,7 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :checker_mal, CheckerMal.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "checker_mal_test#{System.get_env("MIX_TEST_PARTITION")}",
-  hostname: "localhost",
+  database: Path.expand("../data/test.sqlite", Path.dirname(__ENV__.file)),
   pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test. If one is required,
@@ -19,4 +16,4 @@ config :checker_mal, CheckerMalWeb.Endpoint,
   server: false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning

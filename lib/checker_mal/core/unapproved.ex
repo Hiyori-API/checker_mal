@@ -96,11 +96,16 @@ defmodule CheckerMal.Core.Unapproved.Utils do
     min > 0
   end
 
+  @page_expire_time Application.compile_env(
+                      :checker_mal,
+                      :unapproved_page_expire_time,
+                      :timer.hours(3)
+                    )
+
   def has_expired?(state) do
     now = NaiveDateTime.utc_now()
 
-    expire_seconds =
-      div(Application.get_env(:checker_mal, :unapproved_page_expire_time, :timer.hours(3)), 1000)
+    expire_seconds = div(@page_expire_time, 1000)
 
     cond do
       not Map.has_key?(state, "at") ->

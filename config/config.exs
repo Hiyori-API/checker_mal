@@ -15,7 +15,6 @@ config :checker_mal,
   unapproved_page_expire_time: :timer.hours(1),
   mal_api_key: mal_id,
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
-  back_arrow: !is_nil(System.get_env("BACK_ARROW")),
   scheduler_loop_time: :timer.minutes(1),
   source_backend: :txt,
   enabled_backends: [:txt]

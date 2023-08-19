@@ -5,8 +5,8 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   use GenServer
   require Logger
 
-  @loop_period :timer.seconds(Application.get_env(:checker_mal, :entrycache_wait, 2))
-  @api_key Application.get_env(:checker_mal, :mal_api_key)
+  @loop_period :timer.seconds(Application.compile_env(:checker_mal, :entrycache_wait, 2))
+  @api_key Application.compile_env(:checker_mal, :mal_api_key)
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -73,7 +73,7 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
                 Map.put(state[:cached], {type, id}, {name, etype, nsfw})
 
               _ ->
-                Logger.warn(
+                Logger.warning(
                   "EntryCache: Could not cache #{type} #{id}, failed with #{resp.status_code} ignoring..."
                 )
 
@@ -81,7 +81,7 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
             end
 
           {:error, _err} ->
-            Logger.warn("EntryCache: Could not cache #{type} #{id}, ignoring...")
+            Logger.warning("EntryCache: Could not cache #{type} #{id}, ignoring...")
             state[:cached]
         end
 

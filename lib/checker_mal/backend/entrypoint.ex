@@ -10,26 +10,23 @@ defmodule CheckerMal.Backend.EntryPoint do
   @default_source :txt
   @default_backends [:txt]
 
-  def read(type, rating) do
-    # TODO: do, for each rating
-    # :txt is default source
-    source_backend = Application.get_env(:checker_mal, :source_backend, @default_source)
+  @source_backend Application.compile_env(:checker_mal, :source_backend, @default_source)
 
+  def read(type, rating) do
     apply(
-      get_backend_module(source_backend),
+      get_backend_module(@source_backend),
       :read,
       [type, rating]
     )
   end
 
+  @write_backends Application.compile_env(:checker_mal, :enabled_backends, @default_backends)
   # receives one or more feed items to write back to the file
   # reads incase any other changes have been made manually
   # in the interim (while requesting)
   def write(changed_structs, type, rating) when is_list(changed_structs) do
-    backends = Application.get_env(:checker_mal, :enabled_backends, @default_backends)
-
     if length(changed_structs) > 0 do
-      backends
+      @write_backends
       |> Enum.map(fn backend_atom ->
         apply(
           get_backend_module(backend_atom),

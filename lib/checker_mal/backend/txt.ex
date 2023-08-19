@@ -38,7 +38,7 @@ defmodule CheckerMal.Backend.Txt do
       |> Stream.filter(fn ln -> String.length(ln) > 0 end)
       |> Enum.map(fn ln -> String.to_integer(ln) end)
     else
-      Logger.warn("Using empty cache for #{type} #{rating}")
+      Logger.warning("Using empty cache for #{type} #{rating}")
       dirname = Path.dirname(path)
 
       if not File.exists?(dirname) do
@@ -57,8 +57,9 @@ defmodule CheckerMal.Backend.Txt do
     |> Enum.into(File.stream!(path, [:write]))
   end
 
+  @base Application.compile_env(:checker_mal, :txt_backend_directory, "./")
+
   def filepath(type, rating) do
-    base = Application.get_env(:checker_mal, :txt_backend_directory, "./")
-    Path.join(base, "#{Atom.to_string(type)}_#{Atom.to_string(rating)}.txt")
+    Path.join(@base, "#{Atom.to_string(type)}_#{Atom.to_string(rating)}.txt")
   end
 end

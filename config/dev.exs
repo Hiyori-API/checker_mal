@@ -2,12 +2,10 @@ import Config
 
 # Configure your database
 config :checker_mal, CheckerMal.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "checker_mal_dev",
-  hostname: "localhost",
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  database: Path.expand("../data/dev.sqlite", Path.dirname(__ENV__.file)),
+  pool_size: 5,
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true
 
 config :checker_mal,
   mal_wait_time: 10

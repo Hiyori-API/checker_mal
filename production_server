@@ -1,14 +1,18 @@
 #!/bin/bash -e
 
-declare DATABASE_URL CHECKER_MAL_SECRET
+declare CHECKER_MAL_SECRET
 CHECKER_MAL_SECRET="${CHECKER_MAL_SECRET:?No CHECKER_MAL_SECRET environment variable set}"
-DATABASE_URL="${CHECKER_MAL_URI:?No CHECKER_MAL_URI environment variable set}"
 MAL_CLIENTID="${MAL_CLIENTID?:No MAL Client ID set}"
 MIX_ENV=prod
-declare -rx DATABASE_URL CHECKER_MAL_SECRET MIX_ENV MAL_CLIENTID
+declare -rx CHECKER_MAL_SECRET MIX_ENV MAL_CLIENTID
+
 
 THIS_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 cd "${THIS_DIR}" || exit $?
+
+DATABASE_PATH="${THIS_DIR}/data/prod.db"
+
+export DATABASE_PATH
 
 case "$1" in
 # drop into an interactive shell after loading environment secrets

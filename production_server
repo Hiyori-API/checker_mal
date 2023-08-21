@@ -39,7 +39,7 @@ esac
 
 mix deps.get --only prod
 mix compile
-mix ecto.create
+mix prod.setup
 
 cd ./assets/
 yarn install

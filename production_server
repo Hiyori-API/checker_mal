@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-declare CHECKER_MAL_SECRET
+declare CHECKER_MAL_SECRET MAL_CLIENTID
 CHECKER_MAL_SECRET="${CHECKER_MAL_SECRET:?No CHECKER_MAL_SECRET environment variable set}"
 MAL_CLIENTID="${MAL_CLIENTID?:No MAL Client ID set}"
 MIX_ENV=prod

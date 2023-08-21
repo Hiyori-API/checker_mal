@@ -1,6 +1,7 @@
 tags*
 /data/
 *.pdf
+.env
 
 # txt cache directory
 /cache/

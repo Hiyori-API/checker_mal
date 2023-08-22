@@ -66,7 +66,7 @@ defmodule CheckerMal.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "prod.setup": ["ecto.create", "ecto.migrate", "phx.digest.clean"],
-      "prod.server": ["phx.digest", "phx.server"]
+      "checker_mal.prod.server": ["phx.digest", "phx.server"]
     ]
   end
 end

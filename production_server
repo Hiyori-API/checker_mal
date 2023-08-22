@@ -45,4 +45,4 @@ cd ./assets/
 yarn install
 yarn deploy
 cd "${THIS_DIR}" || exit $?
-exec mix prod.server
+exec mix checker_mal.prod.server

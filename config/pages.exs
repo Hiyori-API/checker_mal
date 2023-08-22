@@ -26,17 +26,17 @@ config :checker_mal,
     {40, T.ms_to_s(T.days(10))},
     {100, T.ms_to_s(T.days(20))},
     # {:unapproved, T.ms_to_s(T.days(28))},
-    {:infinite, T.ms_to_s(T.days(30))}
+    {:infinite, T.ms_to_s(T.days(45))}
   ],
   manga_pages: [
     {3, T.ms_to_s(:timer.hours(1))},
     {8, T.ms_to_s(:timer.hours(8))},
     {20, T.ms_to_s(T.days(3))},
     {40, T.ms_to_s(T.days(6))},
-    {80, T.ms_to_s(T.days(8))},
-    {150, T.ms_to_s(T.days(14))},
+    {80, T.ms_to_s(T.days(14))},
+    {150, T.ms_to_s(T.days(30))},
     # {:unapproved, T.ms_to_s(T.days(28))},
-    {:infinite, T.ms_to_s(T.days(30))}
+    {:infinite, T.ms_to_s(T.days(60))}
   ]
 
 # reason why this uses seconds instead of ms

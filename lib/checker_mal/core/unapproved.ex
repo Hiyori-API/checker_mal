@@ -46,7 +46,8 @@ defmodule CheckerMal.Core.Unapproved do
 
   # doesnt use state since the results from the scraper and
   # keys the map is merged with accounts for all of the state
-  def handle_cast({:update_results, scraper_resp}, _state) do
+       def handle_cast({:update_results, scraper_resp}, _state) do
+    Logger.info("Finished parsing ID index page")
     # marks the time and is_updating keys when unapproved page is finished updating
     {:noreply,
      scraper_resp
@@ -149,6 +150,10 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
   # this can be called from other modules, to wait in a sleep loop
   # after it returns, other modules can request the get_all_anime
   # and get_all_manga and know they return data
+  #
+  # this is called in the UnapprovedHtmlEntryCache when it starts,
+  # which is what starts the whole genserver process of requesting
+  # the unapproved html page and parsing it
   def wait_till_parsed(), do: wait_till_parsed(fn -> get_all_anime() end)
 
   def wait_till_parsed(request_func) when is_function(request_func),
@@ -179,6 +184,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   @relation_id_page "https://myanimelist.net/info.php?search=%25%25%25&go=relationids&divname=relationGen1"
 
   def request() do
+    Logger.info("Requesting index page which has all approved/unapproved IDs")
     case Scraper.rated_http_get(@relation_id_page) do
       {:ok, html_response} ->
         parse_unapproved_page(html_response)

@@ -12,7 +12,7 @@ defmodule CheckerMal.Core.RateLimit do
   Returns
     {:ok, <function which calls :used for this endpoint>}
   or
-    {:err, seconds_till_you_should_request_again}}
+    {:error, seconds_till_you_should_request_again}}
   """
 
   use GenServer
@@ -32,7 +32,9 @@ defmodule CheckerMal.Core.RateLimit do
     {:noreply, state}
   end
 
-  # check if the last time we recfor_external_api
+  # check if the last time we rec for_external_api
+  @spec handle_call({:check_rate, for_external_api :: binary, seconds_elapsed :: integer}, any, any) ::
+          {:reply, {:ok, function}, any} | {:reply, {:error, integer}, any}
   def handle_call({:check_rate, for_external_api, seconds_elapsed}, _from, state)
       when is_integer(seconds_elapsed) do
     now = DateTime.utc_now()

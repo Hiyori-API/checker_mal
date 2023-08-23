@@ -29,6 +29,8 @@ defmodule CheckerMal.Core.Scraper do
 
   # note: the only time this might fail as a rate limit would be if MAL is down (which would cause
   # minute long sleeps in the rated_http_recurse function anyways, or when unapproved is being requested
+  @spec rated_http_get(url :: binary, headers :: list, options :: list) ::
+          {:ok, String.t()} | {:error, String.t()}
   @doc """
   Transparently rate limits requests to MAL
   """
@@ -49,6 +51,8 @@ defmodule CheckerMal.Core.Scraper do
 
   # times: number of times this request has already been tried
   # giveup how many requests to do for this URL before giving up
+  @spec rated_http_recurse(req_func :: function, times :: integer, giveup :: integer) ::
+          {:ok, String.t()} | {:error, String.t()}
   defp rated_http_recurse(req_func, times \\ 0, giveup \\ 10)
        when is_function(req_func) and is_integer(times) and is_integer(giveup) do
     case req_func.() do

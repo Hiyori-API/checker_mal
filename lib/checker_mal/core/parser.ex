@@ -23,7 +23,7 @@ defmodule CheckerMal.Core.Parser do
       {:ok, response_text} ->
         parse_page(response_text)
 
-      {:err, error} ->
+      {:error, error} ->
         Logger.error(error)
         # maybe error here instead? so it restarts? if rated_http_get has failed
         # (and that has backoff), should it fail completely?

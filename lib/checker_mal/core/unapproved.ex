@@ -134,12 +134,16 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
     do: GenServer.call(CheckerMal.Core.Unapproved, genserver_atom)
 
   # primarily used on the webpage
+  @spec get_all_anime() :: [integer()]
   def get_all_anime(), do: get_handler(:get_all_anime)
+  @spec get_all_manga() :: [integer()]
   def get_all_manga(), do: get_handler(:get_all_manga)
 
   # primarly used in the indexer
   # hd works here since IDs are reverse sorted after being parsed (in table_to_ids)
+  @spec get_last_anime_id() :: integer()
   def get_last_anime_id(), do: get_handler(:get_all_anime) |> hd()
+  @spec get_last_manga_id() :: integer()
   def get_last_manga_id(), do: get_handler(:get_all_manga) |> hd()
 
   # this can be called from other modules, to wait in a sleep loop
@@ -185,6 +189,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
     end
   end
 
+  @spec parse_unapproved_page(String.t()) :: %{}
   def parse_unapproved_page(html_response) do
     {:ok, document} = Floki.parse_document(html_response)
     [anime, manga] = Floki.find(document, "div.normal_header + table")
@@ -195,10 +200,25 @@ defmodule CheckerMal.Core.Unapproved.Parser do
     }
   end
 
-  defp table_to_ids(type_table) do
+  @spec table_to_ids(Floki.html_tag()) :: [integer()]
+  defp table_to_ids({"table", _attrs, children} = _type_table) when is_list(children) do
     # the 'a' elements' text is the ID for this entry
-    Floki.find(type_table, "a")
-    |> Enum.map(fn {_tag, _attrs, [id_str]} -> String.to_integer(id_str) end)
+    Floki.find(children, "a")
+    |> Enum.map(fn node ->
+      case node do
+        {_tag, _attrs, [id]} when is_binary(id) ->
+          id |> String.to_integer()
+
+        _ ->
+          Logger.error("Could not parse node #{inspect(node)}")
+          nil
+      end
+    end)
+    |> Enum.reject(&is_nil/1)
     |> Utils.reverse_sort()
+  end
+
+  defp table_to_ids(data) do
+    raise "Could not parse table, expected a Floki.html_tag(), got #{inspect(data)}"
   end
 end

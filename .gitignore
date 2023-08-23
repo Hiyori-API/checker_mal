@@ -40,3 +40,8 @@ npm-debug.log
 # we ignore priv/static. You may want to comment
 # this depending on your deployment strategy.
 /priv/static/
+
+# dont sync the unapproved page vcr, its over 30MB
+# will just have it locally as an integration test
+# (though I doubt that page will ever change)
+/fixture/vcr_cassettes/test_unapproved_page_parse.json

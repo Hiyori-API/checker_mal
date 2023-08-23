@@ -16,24 +16,33 @@ defmodule CheckerMal.Application do
     end
   end
 
+  # skip starting the entry caching and cache genservers in test
+  defp state_genservers() do
+    if Mix.env() == :test do
+      []
+    else
+      [
+        CheckerMal.Core.Unapproved,
+        CheckerMal.Core.Scheduler
+      ] ++
+        unapproved_html()
+    end
+  end
+
   def start(_type, _args) do
     children =
-      Enum.concat(
-        [
-          # Start the Ecto repository
-          CheckerMal.Repo,
-          # Start the Telemetry supervisor
-          CheckerMalWeb.Telemetry,
-          # Start the PubSub system
-          {Phoenix.PubSub, name: CheckerMal.PubSub},
-          # Start the Endpoint (http/https)
-          CheckerMalWeb.Endpoint,
-          CheckerMal.Core.RateLimit,
-          CheckerMal.Core.Unapproved,
-          CheckerMal.Core.Scheduler
-        ],
-        unapproved_html()
-      )
+      [
+        # Start the Ecto repository
+        CheckerMal.Repo,
+        # Start the Telemetry supervisor
+        CheckerMalWeb.Telemetry,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: CheckerMal.PubSub},
+        # Start the Endpoint (http/https)
+        CheckerMalWeb.Endpoint,
+        CheckerMal.Core.RateLimit
+      ] ++
+        state_genservers()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

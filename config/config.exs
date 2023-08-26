@@ -12,12 +12,13 @@ mal_id = System.get_env("MAL_CLIENTID") || raise "No MAL_CLIENTID set"
 # mal index config
 config :checker_mal,
   mal_error_wait_time: :timer.minutes(1),
-  unapproved_page_expire_time: :timer.hours(1),
+  unapproved_page_expire_time: :timer.minutes(90),
   mal_api_key: mal_id,
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
   scheduler_loop_time: :timer.minutes(1),
   source_backend: :txt,
-  enabled_backends: [:txt]
+  enabled_backends: [:txt],
+  unapproved_anime_require_at_least: System.get_env("ANIME_REQUIRE_AT_LEAST") || 25000
 
 # enabled_backends: [:txt, :mongodb]
 
@@ -33,6 +34,8 @@ import_config "pages.exs"
 
 config :checker_mal,
   unapproved_html_enabled: is_nil(System.get_env("UNAPPROVED_HTML_DISABLED")),
+  # unapproved_pages_enabled: [:anime, :manga]
+  unapproved_pages_enabled: [:anime],
   unapproved_check_time: :timer.minutes(5),
   unapproved_html_basepath: "/mal_unapproved",
   unapproved_api_basepath: "/mal_unapproved/api",

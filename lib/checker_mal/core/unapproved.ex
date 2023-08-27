@@ -92,14 +92,7 @@ defmodule CheckerMal.Core.Unapproved do
 end
 
 defmodule CheckerMal.Core.Unapproved.Utils do
-  def has_data?(state) do
-    min =
-      [Map.get(state, "all_anime", []), Map.get(state, "all_manga", [])]
-      |> Enum.map(&length/1)
-      |> Enum.min()
-
-    min > 0
-  end
+  def has_data?(state), do: Map.get(state, "all_anime", []) |> length() > 0
 
   @page_expire_time Application.compile_env(
                       :checker_mal,

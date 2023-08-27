@@ -217,9 +217,6 @@ defmodule CheckerMal.Core.Unapproved.Parser do
     # this should be the anime rows
     anime_table_ids = anime_table_hrefs(anime_trs)
 
-    inspect(anime_table_ids)
-    inspect(anime_table_ids |> length())
-
     %{
       "all_anime" => anime_table_ids
     }

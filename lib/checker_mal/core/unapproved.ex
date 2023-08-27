@@ -10,6 +10,8 @@ defmodule CheckerMal.Core.Unapproved do
 
   alias CheckerMal.Core.Unapproved.Utils
   alias CheckerMal.Core.Unapproved.Parser
+  alias CheckerMal.DiscordWebook
+
   use GenServer
   require Logger
 
@@ -26,7 +28,7 @@ defmodule CheckerMal.Core.Unapproved do
   # can take up to a minute
   # else, the GenServer is blocked and timeouts occur while that
   # is happening
-  defp default_state(), do: %{"all_anime" => [], "all_manga" => [], "is_updating" => false}
+  defp default_state(), do: %{"all_anime" => [], "is_updating" => false}
 
   # if the state has expired, update in the background
   defp update_async(state) do
@@ -46,7 +48,7 @@ defmodule CheckerMal.Core.Unapproved do
 
   # doesnt use state since the results from the scraper and
   # keys the map is merged with accounts for all of the state
-       def handle_cast({:update_results, scraper_resp}, _state) do
+  def handle_cast({:update_results, scraper_resp}, _state) do
     Logger.info("Finished parsing ID index page")
     # marks the time and is_updating keys when unapproved page is finished updating
     {:noreply,
@@ -63,6 +65,8 @@ defmodule CheckerMal.Core.Unapproved do
   end
 
   def handle_call(:get_all_manga, _from, state) do
+    raise "Unapproved manga is disabled"
+
     state = update_async(state)
     {:reply, Map.get(state, "all_manga"), state}
   end
@@ -179,12 +183,14 @@ end
 defmodule CheckerMal.Core.Unapproved.Parser do
   alias CheckerMal.Core.Scraper
   alias CheckerMal.Core.Utils
+  alias CheckerMal.DiscordWebook
   require Logger
 
-  @relation_id_page "https://myanimelist.net/info.php?search=%25%25%25&go=relationids&divname=relationGen1"
+  @relation_id_page "https://myanimelist.net/info.php?search=+++&go=relationids&divname=relationGen1"
 
   def request() do
-    Logger.info("Requesting index page which has all approved/unapproved IDs")
+    Logger.info("Requesting index page which has all approved/unapproved anime IDs")
+
     case Scraper.rated_http_get(@relation_id_page) do
       {:ok, html_response} ->
         parse_unapproved_page(html_response)
@@ -195,36 +201,88 @@ defmodule CheckerMal.Core.Unapproved.Parser do
     end
   end
 
+  @anime_min Application.compile_env(:checker_mal, :unapproved_anime_min)
+  @anime_max Application.compile_env(:checker_mal, :unapproved_anime_max)
+
   @spec parse_unapproved_page(String.t()) :: %{}
   def parse_unapproved_page(html_response) do
     {:ok, document} = Floki.parse_document(html_response)
-    [anime, manga] = Floki.find(document, "div.normal_header + table")
+
+    tables = Floki.find(document, "table")
+
+    if length(tables) != 3 do
+      error_msg = "Expected 3 tables, got #{tables |> length()}"
+
+      DiscordWebook.send_error(error_msg)
+
+      raise error_msg
+    end
+
+    anime_table = tables |> Enum.at(1)
+    anime_trs = Floki.find(anime_table, "tr")
+
+    # this should be the anime rows
+    anime_table_ids = anime_table_hrefs(anime_trs)
+
+    inspect(anime_table_ids)
+    inspect(anime_table_ids |> length())
 
     %{
-      "all_anime" => table_to_ids(anime),
-      "all_manga" => table_to_ids(manga)
+      "all_anime" => anime_table_ids
     }
   end
 
-  @spec table_to_ids(Floki.html_tag()) :: [integer()]
-  defp table_to_ids({"table", _attrs, children} = _type_table) when is_list(children) do
-    # the 'a' elements' text is the ID for this entry
-    Floki.find(children, "a")
-    |> Enum.map(fn node ->
-      case node do
-        {_tag, _attrs, [id]} when is_binary(id) ->
-          id |> String.to_integer()
+  @spec anime_table_hrefs([Floki.html_tag()]) :: [integer()]
+  defp anime_table_hrefs(tr_rows) do
+    # filter to elements with anchors, first tr could be a header? but I dont
+    # even want to risk just discarding it, better to filter since webscraping
+    trs_with_a =
+      tr_rows
+      |> Enum.filter(fn tr ->
+        Floki.find(tr, "a")
+        |> length() == 1
+      end)
 
-        _ ->
-          Logger.error("Could not parse node #{inspect(node)}")
-          nil
-      end
-    end)
-    |> Enum.reject(&is_nil/1)
+    bebop = trs_with_a |> Enum.at(0) |> Floki.find("td")
+
+    if length(bebop) != 3 do
+      error_msg = "Expected 2 td elements, got #{bebop |> length()}"
+
+      DiscordWebook.send_error(error_msg)
+
+      raise error_msg
+    end
+
+    # the first td element is the anime ID
+    # the second td element is the anime name
+    # the third td element is the anime type
+
+    id = bebop |> Enum.at(0, 0) |> Floki.text() |> String.to_integer()
+    name = bebop |> Enum.at(1, "") |> Floki.text() |> String.trim()
+    type = bebop |> Enum.at(2, "") |> Floki.text() |> String.trim() |> String.downcase()
+
+    error_if("First anime ID in table is not id 1", id != 1)
+    error_if("First anime name in table is not 'Cowboy Bebop' (#{name})", name != "Cowboy Bebop")
+    error_if("First anime type in table is not 'tv' (#{type})", type != "tv")
+
+    error_if(
+      "Number of rows (#{length(trs_with_a)}) is not in expected_range (#{@anime_min},#{@anime_max})",
+      length(trs_with_a) > @anime_max or length(trs_with_a) < @anime_min
+    )
+
+    IO.inspect(trs_with_a |> length())
+
+    trs_with_a
+    |> Floki.find("a")
+    |> Enum.map(fn {_, _, [id]} -> id end)
+    |> Enum.map(fn id -> String.to_integer(id) end)
     |> Utils.reverse_sort()
   end
 
-  defp table_to_ids(data) do
-    raise "Could not parse table, expected a Floki.html_tag(), got #{inspect(data)}"
+  def error_if(msg, true) do
+    DiscordWebook.send_error(msg)
+    raise msg
   end
+
+  def error_if(_msg, false), do: :ok
 end

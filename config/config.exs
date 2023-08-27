@@ -18,7 +18,14 @@ config :checker_mal,
   scheduler_loop_time: :timer.minutes(1),
   source_backend: :txt,
   enabled_backends: [:txt],
-  unapproved_anime_require_at_least: System.get_env("ANIME_REQUIRE_AT_LEAST") || 25000
+  # these are heuristics provided me to make sure things arent broken
+  # may have to be updated every once a while
+  #
+  # the max is here to make sure were not parsing anime as manga entries
+  # (as im writing this that sits around 65k)
+  unapproved_anime_min: System.get_env("ANIME_REQUIRE_MIN") || 24000,
+  unapproved_anime_max: System.get_env("ANIME_REQUIRE_MAX") || 60000,
+  send_errors_to_discord_webhook: System.get_env("DISCORD_WEBHOOK")
 
 # enabled_backends: [:txt, :mongodb]
 
@@ -34,8 +41,6 @@ import_config "pages.exs"
 
 config :checker_mal,
   unapproved_html_enabled: is_nil(System.get_env("UNAPPROVED_HTML_DISABLED")),
-  # unapproved_pages_enabled: [:anime, :manga]
-  unapproved_pages_enabled: [:anime],
   unapproved_check_time: :timer.minutes(5),
   unapproved_html_basepath: "/mal_unapproved",
   unapproved_api_basepath: "/mal_unapproved/api",

@@ -270,7 +270,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
       length(trs_with_a) > @anime_max or length(trs_with_a) < @anime_min
     )
 
-    IO.inspect(trs_with_a |> length())
+    Logger.info("Anime table has #{length(trs_with_a)} rows")
 
     trs_with_a
     |> Floki.find("a")

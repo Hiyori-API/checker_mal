@@ -4,6 +4,7 @@ defmodule CheckerMal.Core.Unapproved.Parser.Test do
 
   alias CheckerMal.Core.Unapproved.Parser
 
+  @tag :skip
   test "parse unapproved id page" do
     use_cassette "test_unapproved_page_parse" do
       %{

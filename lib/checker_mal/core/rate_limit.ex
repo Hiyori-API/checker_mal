@@ -33,7 +33,11 @@ defmodule CheckerMal.Core.RateLimit do
   end
 
   # check if the last time we rec for_external_api
-  @spec handle_call({:check_rate, for_external_api :: binary, seconds_elapsed :: integer}, any, any) ::
+  @spec handle_call(
+          {:check_rate, for_external_api :: binary, seconds_elapsed :: integer},
+          any,
+          any
+        ) ::
           {:reply, {:ok, function}, any} | {:reply, {:error, integer}, any}
   def handle_call({:check_rate, for_external_api, seconds_elapsed}, _from, state)
       when is_integer(seconds_elapsed) do

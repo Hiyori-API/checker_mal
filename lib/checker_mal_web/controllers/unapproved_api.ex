@@ -50,5 +50,5 @@ defmodule CheckerMalWeb.UnapprovedAPIController do
   end
 
   def anime(conn, params), do: request(conn, params, :anime)
-  def manga(conn, params), do: request(conn, params, :manga)
+  # def manga(conn, params), do: request(conn, params, :manga)
 end

@@ -48,7 +48,7 @@ defmodule CheckerMalWeb.Router do
     pipe_through :api
 
     get "/anime/", UnapprovedAPIController, :anime
-    get "/manga/", UnapprovedAPIController, :manga
+    # get "/manga/", UnapprovedAPIController, :manga
   end
 
   # Enables LiveDashboard only for development

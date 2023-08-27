@@ -148,7 +148,7 @@ defmodule CheckerMalWeb.UnapprovedController do
       |> Map.put(:title, "Unapproved MAL Entries - Manga")
       |> Map.put(:type, "manga")
 
-    render(conn, "unapproved.html", data: data)
+    render(conn |> put_status(404), "unapproved.html", data: data)
   end
 
   def anime(conn, _params), do: controller(conn, :anime)

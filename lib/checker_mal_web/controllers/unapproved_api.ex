@@ -30,7 +30,10 @@ defmodule CheckerMalWeb.UnapprovedAPIController do
     if Enum.empty?(ids) do
       conn
       |> put_status(503)
-      |> json(%{error: "server is currently booting (wait 2 minutes), or MAL is down/has changed HTML and this broke"})
+      |> json(%{
+        error:
+          "server is currently booting (wait 2 minutes), or MAL is down/has changed HTML and this broke"
+      })
     else
       info = UnapprovedController.fetch_metadata(stype, ids)
 

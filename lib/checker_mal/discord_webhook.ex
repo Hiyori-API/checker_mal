@@ -4,7 +4,6 @@ defmodule CheckerMal.DiscordWebook do
   @webook_url Application.compile_env(:checker_mal, :send_errors_to_discord_webhook)
 
   def send_error(error) when is_bitstring(error) do
-
     cond do
       is_nil(@webook_url) ->
         Logger.warning("No discord webhook set, not sending error")

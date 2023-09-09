@@ -25,6 +25,8 @@ config :checker_mal,
   # (as im writing this that sits around 65k)
   unapproved_anime_min: System.get_env("ANIME_REQUIRE_MIN") || 24000,
   unapproved_anime_max: System.get_env("ANIME_REQUIRE_MAX") || 60000,
+  unapproved_manga_min: System.get_env("MANGA_REQUIRE_MIN") || 70000,
+  unapproved_manga_max: System.get_env("MANGA_REQUIRE_MAX") || 200_000,
   send_errors_to_discord_webhook: System.get_env("DISCORD_WEBHOOK")
 
 # enabled_backends: [:txt, :mongodb]

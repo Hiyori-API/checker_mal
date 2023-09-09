@@ -140,18 +140,18 @@ defmodule CheckerMalWeb.UnapprovedController do
     render(conn, "unapproved.html", data: data)
   end
 
-  def manga_disabled(conn) do
-    data =
-      %{
-        basepath: @html_basepath
-      }
-      |> Map.put(:title, "Unapproved MAL Entries - Manga")
-      |> Map.put(:type, "manga")
-
-    render(conn |> put_status(404), "unapproved.html", data: data)
-  end
+  # def manga_disabled(conn) do
+  #   data =
+  #     %{
+  #       basepath: @html_basepath
+  #     }
+  #     |> Map.put(:title, "Unapproved MAL Entries - Manga")
+  #     |> Map.put(:type, "manga")
+  #
+  #   render(conn |> put_status(404), "unapproved.html", data: data)
+  # end
 
   def anime(conn, _params), do: controller(conn, :anime)
-  # def manga(conn, _params), do: controller(conn, :manga)
-  def manga(conn, _params), do: manga_disabled(conn)
+  def manga(conn, _params), do: controller(conn, :manga)
+  # def manga(conn, _params), do: manga_disabled(conn)
 end

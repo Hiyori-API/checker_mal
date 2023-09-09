@@ -20,7 +20,6 @@
       MANGA
     </a>
   </div>
-  <%= if @data[:type] == "anime" do %>
   <ul>
     <li>There are currently <%= length(@data[:ids]) %> unapproved <%= @data[:type] %></li>
     <li>This was updated <%= @data[:since_update_mins] %> minutes ago</li>
@@ -47,23 +46,6 @@
       </li>
     <% end %>
   </ol>
-<% else %>
-  <div>
-    Sorry, MAL removed the workaround this depended on to get unapproved manga IDs, so its not possible to update them on this page anymore. However <a href="https://sean.fish/dbsentinel">DBSentinel</a> does have a backup of the queue as it was on August 25th, with images/data/dates etc (but it is currently not able to discover new unapproved entries, or mark ones that have denied as such)
-  </div>
-  <br />
-  <div>
-    Im looking into ways to find new unapproved manga entries and update the status of items that get approved/denied, but it may take a while as theres no obvious solution and I am a bit busy with work/other projects
-  </div>
-  <br />
-  <div>
-    Heres a link to the <a href="https://sean.fish/p/unapproved_last/manga.json">last known list of unapproved manga</a> (JSON) from this page if that is useful
-  </div>
-  <br />
-  <div>
-    If you'd like to discuss/contact me about anything else regarding this, feel free to join the <a href="#" id="discord_url">Discord</a>
-  </div>
-<% end %>
 </section>
  <script>
    // basic obfuscate discord url from being scraped
@@ -75,5 +57,4 @@
      el.href = url;
    });
 </script>
-
 

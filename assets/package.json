@@ -23,7 +23,7 @@
     "optimize-css-assets-webpack-plugin": "^6.0.1",
     "sass": "^1.49.7",
     "sass-loader": "^12.4.0",
-    "tar": "^6.1.11",
+    "tar": "^6.2.1",
     "terser-webpack-plugin": "^5.3.1",
     "trim-newlines": "^4.0.2",
     "webpack": "5.76.0",

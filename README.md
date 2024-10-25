@@ -1,6 +1,6 @@
 # CheckerMal
 
-This is mostly a rewrite of [mal-id-cache](https://github.com/seanbreckenridge/mal-id-cache), with nicer concurrency/entrypoints.
+This is mostly a rewrite of [mal-id-cache](https://github.com/purarue/mal-id-cache), with nicer concurrency/entrypoints.
 
 This uses the [Just Added](https://myanimelist.net/anime.php?o=9&c%5B0%5D=a&c%5B1%5D=d&cv=2&w=1) page on MAL to find new entries, but all that page is is a search on the entire database reverse sorted by IDs. New entries may appear on the 2nd, 3rd, or even 20th page, if a moderator took a long time to get around to it. See [`config/pages.exs`](./config/pages.exs) for how often this checks different page ranges.
 
@@ -11,7 +11,7 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 ### Planned Features:
 
 - [x] (**Core**) Maintain an up-to-date cache of anime IDs on MAL
-- [x] Calculate unapproved items and display them as HTML (replace [this](https://github.com/seanbreckenridge/mal-unapproved))
+- [x] Calculate unapproved items and display them as HTML (replace [this](https://github.com/purarue/mal-unapproved))
 - [x] Create an API for unapproved items
 
 Note: This used to also index the unapproved manga, but since Aug 25 2023, MAL removed the way I was doing that. See <https://sean.fish/mal_unapproved/manga> for info

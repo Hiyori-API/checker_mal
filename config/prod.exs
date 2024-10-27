@@ -12,7 +12,7 @@ import Config
 #
 # TODO: make host configurable
 config :checker_mal, CheckerMalWeb.Endpoint,
-  url: [host: "sean.fish", port: 80],
+  url: [host: "purarue.xyz", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 config :checker_mal,

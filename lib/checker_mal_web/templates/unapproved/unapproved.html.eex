@@ -10,7 +10,7 @@
   </div>
   <br />
   <div>
-    Related: <a href="https://sean.fish/dbsentinel/">DBSentinel</a>, which lists unapproved, deleted, and entries that have denied from MAL
+    Related: <a href="https://purarue.xyz/dbsentinel/">DBSentinel</a>, which lists unapproved, deleted, and entries that have denied from MAL
   </div>
   <div class="buttons">
     <a class="button" href="<%= @data[:basepath] <> "/anime" %>">
@@ -49,7 +49,7 @@
 </section>
  <script>
    // basic obfuscate discord url from being scraped
-   const parts = ["https://sean.fish", "s", "mal_discord"];
+   const parts = ["https://purarue.xyz", "s", "mal_discord"];
 
    document.addEventListener("DOMContentLoaded", () => {
      const url = parts.join("/");

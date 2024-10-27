@@ -14,7 +14,7 @@ This acts as the Checker for MAL to maintain a cache for `Hiyori`, but it has so
 - [x] Calculate unapproved items and display them as HTML (replace [this](https://github.com/purarue/mal-unapproved))
 - [x] Create an API for unapproved items
 
-Note: This used to also index the unapproved manga, but since Aug 25 2023, MAL removed the way I was doing that. See <https://sean.fish/mal_unapproved/manga> for info
+Note: This used to also index the unapproved manga, but since Aug 25 2023, MAL removed the way I was doing that. See <https://purarue.xyz/mal_unapproved/manga> for info
 
 ---
 
@@ -43,9 +43,9 @@ The `name`, `nsfw` and `type` fields are all nullable -- they might by `null` if
 
 There are public, CORS-friendly API routes at:
 
-<https://sean.fish/mal_unapproved/api/anime>
+<https://purarue.xyz/mal_unapproved/api/anime>
 
-You can also limit how many are returned, if you just want the top <https://sean.fish/mal_unapproved/api/anime?limit=50>
+You can also limit how many are returned, if you just want the top <https://purarue.xyz/mal_unapproved/api/anime?limit=50>
 
 ---
 

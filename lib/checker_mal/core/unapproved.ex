@@ -177,7 +177,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   alias CheckerMal.DiscordWebook
   require Logger
 
-  @relation_id_page "https://myanimelist.net/info.php?search=___&go=relationids&divname=relationGen1"
+  @relation_id_page "https://myanimelist.net/info.php?search=___&go=relationids"
 
   def request() do
     Logger.info("Requesting index page which has all approved/unapproved anime/manga IDs")

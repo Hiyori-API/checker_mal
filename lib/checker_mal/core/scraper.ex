@@ -37,6 +37,12 @@ defmodule CheckerMal.Core.Scraper do
   def rated_http_get(url, headers \\ [], options \\ [])
       when is_bitstring(url) and is_list(headers) and is_list(options) do
     use_rate_limit = wait_for_rate_limit()
+    # add "Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0" to headers
+    headers = [
+      {"User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"}
+      | headers
+    ]
+
     # set recv_timeout
     # if HTTP error occurs, wait/sleep and recurse
     http_resp =

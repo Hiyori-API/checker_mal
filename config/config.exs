@@ -18,6 +18,7 @@ config :checker_mal,
   scheduler_loop_time: :timer.minutes(1),
   source_backend: :txt,
   enabled_backends: [:txt],
+  unapproved_enabled: is_nil(System.get_env("UNAPPROVED_DISABLED")),
   # these are heuristics provided me to make sure things arent broken
   # may have to be updated every once a while
   #

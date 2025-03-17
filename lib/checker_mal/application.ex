@@ -5,14 +5,25 @@ defmodule CheckerMal.Application do
 
   use Application
 
-  defp unapproved_html() do
-    if Application.get_env(:checker_mal, :unapproved_html_enabled, false) do
-      [
-        CheckerMal.UnapprovedHtml.EntryCache,
-        CheckerMal.UnapprovedHtml.Cache
-      ]
-    else
-      []
+  defp unapproved_applications() do
+    unapproved_enabled = Application.get_env(:checker_mal, :unapproved_enabled, false)
+    html_enabled = Application.get_env(:checker_mal, :unapproved_html_enabled, false)
+
+    cond do
+      unapproved_enabled && html_enabled ->
+        [
+          CheckerMal.UnapprovedHtml.EntryCache,
+          CheckerMal.UnapprovedHtml.Cache,
+          CheckerMal.Core.Unapproved
+        ]
+
+      unapproved_enabled ->
+        [
+          CheckerMal.Core.Unapproved
+        ]
+
+      true ->
+        []
     end
   end
 
@@ -22,10 +33,9 @@ defmodule CheckerMal.Application do
       []
     else
       [
-        CheckerMal.Core.Unapproved,
         CheckerMal.Core.Scheduler
       ] ++
-        unapproved_html()
+        unapproved_applications()
     end
   end
 

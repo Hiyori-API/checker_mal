@@ -3,6 +3,7 @@ tags*
 *.pdf
 .env
 .elixir_ls
+assets/.yarn/
 
 # txt cache directory
 /cache/

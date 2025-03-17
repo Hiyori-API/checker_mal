@@ -135,9 +135,19 @@ defmodule CheckerMalWeb.UnapprovedController do
     {conn, data}
   end
 
+  @unapproved_enabled Application.compile_env(:checker_mal, :unapproved_enabled)
+
   def controller(conn, type) when is_atom(type) do
-    {conn, data} = data_controller(type, conn)
-    render(conn, "unapproved.html", data: data)
+    if @unapproved_enabled do
+      {conn, data} = data_controller(type, conn)
+      render(conn, "unapproved.html", data: data)
+    else
+      conn
+      |> put_status(500)
+      |> html(
+        "Unapproved HTML is temporarily disabled, you can use https://purarue.xyz/dbsentinel/ to view a cached version, I am working on finding a workaround to re-enable this. See https://github.com/Hiyori-API/checker_mal/issues/33 for more information"
+      )
+    end
   end
 
   # def manga_disabled(conn) do

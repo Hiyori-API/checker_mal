@@ -19,7 +19,7 @@ config :checker_mal,
   source_backend: :txt,
   enabled_backends: [:txt],
   unapproved_enabled: is_nil(System.get_env("UNAPPROVED_DISABLED")),
-  # these are heuristics provided me to make sure things arent broken
+  # these are heuristics provided me to make sure things aren't broken
   # may have to be updated every once a while
   #
   # the max is here to make sure were not parsing anime as manga entries
@@ -38,7 +38,7 @@ import_config "pages.exs"
 # optional webapp at /mal_unapproved/
 # to display currently unapproved entries
 #
-# unapproved_check_time: time between checking if theres a new cache in checker_mal
+# unapproved_check_time: time between checking if there's a new cache in checker_mal
 # html_basepath: where pages should be served
 # asset_basepath: where assets (css/js) should be served
 

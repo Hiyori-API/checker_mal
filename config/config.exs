@@ -12,7 +12,8 @@ mal_id = System.get_env("MAL_CLIENTID") || raise "No MAL_CLIENTID set"
 # mal index config
 config :checker_mal,
   mal_error_wait_time: :timer.minutes(1),
-  unapproved_page_expire_time: :timer.minutes(90),
+  unapproved_page_expire_time: :timer.hours(6),
+  disable_unapproved_requests: false,
   mal_api_key: mal_id,
   txt_backend_directory: System.get_env("TXT_BACKEND_DIR") || "./cache",
   scheduler_loop_time: :timer.minutes(1),
@@ -25,7 +26,7 @@ config :checker_mal,
   # the max is here to make sure were not parsing anime as manga entries
   # (as im writing this that sits around 65k)
   unapproved_anime_min: System.get_env("ANIME_REQUIRE_MIN") || 24000,
-  unapproved_anime_max: System.get_env("ANIME_REQUIRE_MAX") || 60000,
+  unapproved_anime_max: System.get_env("ANIME_REQUIRE_MAX") || 70000,
   unapproved_manga_min: System.get_env("MANGA_REQUIRE_MIN") || 70000,
   unapproved_manga_max: System.get_env("MANGA_REQUIRE_MAX") || 200_000,
   send_errors_to_discord_webhook: System.get_env("DISCORD_WEBHOOK")

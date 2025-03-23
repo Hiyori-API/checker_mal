@@ -59,7 +59,7 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   defp check_uncached(state) do
     # remove any items that are already cached
     state = remove_uncached_from_head(state)
-    # if theres things left to cache
+    # if there's things left to cache
     if not Enum.empty?(state[:uncached]) do
       [{type, id} | rest_uncached] = state[:uncached]
 

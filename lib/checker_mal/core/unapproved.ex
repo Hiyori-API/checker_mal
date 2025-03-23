@@ -46,7 +46,7 @@ defmodule CheckerMal.Core.Unapproved do
     end
   end
 
-  # doesnt use state since the results from the scraper and
+  # doesn't use state since the results from the scraper and
   # keys the map is merged with accounts for all of the state
   def handle_cast({:update_results, scraper_resp}, _state) do
     Logger.info("Finished parsing ID index page")
@@ -135,7 +135,7 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
   @spec get_all_manga() :: [integer()]
   def get_all_manga(), do: get_handler(:get_all_manga)
 
-  # primarly used in the indexer
+  # primarily used in the indexer
   # hd works here since IDs are reverse sorted after being parsed (in table_to_ids)
   @spec get_last_anime_id() :: integer()
   def get_last_anime_id(), do: get_handler(:get_all_anime) |> hd()
@@ -149,17 +149,17 @@ defmodule CheckerMal.Core.Unapproved.Wrapper do
   # this is called in the UnapprovedHtmlEntryCache when it starts,
   # which is what starts the whole genserver process of requesting
   # the unapproved html page and parsing it
-  def wait_till_parsed(), do: wait_till_parsed(fn -> get_all_manga() end)
+  def wait_till_parsed(), do: wait_till_parsed(fn -> get_all_anime() end)
 
   def wait_till_parsed(request_func) when is_function(request_func),
     do: wait_till_parsed([], request_func)
 
   # Wrapper.get_all_anime() requests
-  # asyncronously, so if it has expired, the next
+  # asynchronously, so if it has expired, the next
   # time @unapproved_check_time has elapsed, the items will
   # have updated
   # If get_all_anime returns an empty list, the application
-  # probably just started, so we should wait here syncronously
+  # probably just started, so we should wait here synchronously
   # so we have to up to date IDs
   def wait_till_parsed([], request_func) when is_function(request_func) do
     :timer.sleep(50)
@@ -177,20 +177,20 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   alias CheckerMal.DiscordWebook
   require Logger
 
-  @relation_id_page "https://myanimelist.net/info.php?search=___&go=relationids"
+  @relation_id_page "https://myanimelist.net/info.php?search=+++&go=relationids"
 
   def request() do
-    Logger.info("Requesting index page which has all approved/unapproved anime/manga IDs")
+    Logger.info("Requesting index page which has all approved/unapproved anime IDs")
 
     case Scraper.rated_http_get(@relation_id_page) do
       {:ok, html_response} ->
         anime = parse_unapproved_anime(html_response)
 
-        manga = parse_unapproved_manga(html_response)
+        # manga = parse_unapproved_manga(html_response)
 
         %{
-          "all_anime" => anime["all_anime"],
-          "all_manga" => manga["all_manga"]
+          "all_anime" => anime["all_anime"]
+          # "all_manga" => manga["all_manga"]
         }
 
       {:error, err} ->
@@ -323,7 +323,7 @@ defmodule CheckerMal.Core.Unapproved.Parser do
 
     id = monster |> Enum.at(0, 0) |> Floki.text() |> String.to_integer()
     name = monster |> Enum.at(1, "") |> Floki.text() |> String.trim()
-    # hmm - this doesnt exist for manga?
+    # hmm - this doesn't exist for manga?
     # type = monster |> Enum.at(2, "") |> Floki.text() |> String.trim() |> String.downcase()
 
     error_if("First manga ID in table is not id 1", id != 1)

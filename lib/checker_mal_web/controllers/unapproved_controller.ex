@@ -139,16 +139,16 @@ defmodule CheckerMalWeb.UnapprovedController do
 
   def controller(conn, type) when is_atom(type) do
     if @unapproved_enabled do
-      if type == :manga do
-        conn
-        |> put_status(500)
-        |> html(
-          "I have not been able to find a way to fetch new unapproved manga entries; See https://github.com/Hiyori-API/checker_mal/issues/33 for more information.<br />You can use https://purarue.xyz/dbsentinel/ to view a cached version, I will likely use that to re-create this page at some point in the future, if I'm not able to find a way to fetch unapproved manga etnries."
-        )
-      else
-        {conn, data} = data_controller(type, conn)
-        render(conn, "unapproved.html", data: data)
-      end
+      # if type == :manga do
+      #   conn
+      #   |> put_status(500)
+      #   |> html(
+      #     "I have not been able to find a way to fetch new unapproved manga entries; See https://github.com/Hiyori-API/checker_mal/issues/33 for more information.<br />You can use https://purarue.xyz/dbsentinel/ to view a cached version, I will likely use that to re-create this page at some point in the future, if I'm not able to find a way to fetch unapproved manga etnries."
+      #   )
+      # else
+      {conn, data} = data_controller(type, conn)
+      render(conn, "unapproved.html", data: data)
+      # end
     else
       conn
       |> put_status(500)

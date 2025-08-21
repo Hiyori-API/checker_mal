@@ -177,20 +177,20 @@ defmodule CheckerMal.Core.Unapproved.Parser do
   alias CheckerMal.DiscordWebook
   require Logger
 
-  @relation_id_page "https://myanimelist.net/info.php?search=+++&go=relationids"
+  @relation_id_page "https://myanimelist.net/info.php?search=____&go=relationids"
 
   def request() do
     Logger.info("Requesting index page which has all approved/unapproved anime IDs")
 
-    case Scraper.rated_http_get(@relation_id_page) do
+    case Scraper.rated_http_get(@relation_id_page, [], allow_errors: true) do
       {:ok, html_response} ->
         anime = parse_unapproved_anime(html_response)
 
-        # manga = parse_unapproved_manga(html_response)
+        manga = parse_unapproved_manga(html_response)
 
         %{
-          "all_anime" => anime["all_anime"]
-          # "all_manga" => manga["all_manga"]
+          "all_anime" => anime["all_anime"],
+          "all_manga" => manga["all_manga"]
         }
 
       {:error, err} ->

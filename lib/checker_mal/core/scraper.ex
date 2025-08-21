@@ -43,12 +43,23 @@ defmodule CheckerMal.Core.Scraper do
       | headers
     ]
 
+    {allow_errors, options} = Keyword.pop(options, :allow_errors, false)
+
+    if not is_boolean(allow_errors) do
+      raise ArgumentError, "allow_errors must be a boolean, received: #{inspect(allow_errors)}"
+    end
+
     # set recv_timeout
     # if HTTP error occurs, wait/sleep and recurse
     http_resp =
-      rated_http_recurse(fn ->
-        HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.minutes(1)))
-      end)
+      rated_http_recurse(
+        fn ->
+          HTTPoison.get(url, headers, Keyword.put(options, :recv_timeout, :timer.minutes(1)))
+        end,
+        0,
+        5,
+        allow_errors
+      )
 
     # call the function to update when this rate limit was last used
     use_rate_limit.()
@@ -57,28 +68,38 @@ defmodule CheckerMal.Core.Scraper do
 
   # times: number of times this request has already been tried
   # giveup how many requests to do for this URL before giving up
-  @spec rated_http_recurse(req_func :: function, times :: integer, giveup :: integer) ::
+  @spec rated_http_recurse(
+          req_func :: function,
+          times :: Integer.t(),
+          giveup :: Integer.t(),
+          allow_errors :: boolean()
+        ) ::
           {:ok, String.t()} | {:error, String.t()}
-  defp rated_http_recurse(req_func, times \\ 0, giveup \\ 10)
-       when is_function(req_func) and is_integer(times) and is_integer(giveup) do
+  defp rated_http_recurse(req_func, times, giveup, allow_errors)
+       when is_function(req_func) and is_integer(times) and is_integer(giveup) and
+              is_boolean(allow_errors) do
     case req_func.() do
       {:ok, %HTTPoison.Response{status_code: status, body: body_text, request_url: req_url}} ->
         cond do
           status < 400 ->
             {:ok, body_text}
 
+          status >= 400 and status <= 500 and allow_errors ->
+            Logger.warning("#{req_url} failed with code #{status}, but errors are allowed:")
+            {:ok, body_text}
+
           true ->
             Logger.warning("#{req_url} failed with code #{status}:")
-            handle_backoff(req_func, times, giveup, body_text)
+            handle_backoff(req_func, times, giveup, allow_errors, body_text)
         end
 
       # unrecoverable HTTP error, perhaps a timeout?
       {:error, err} ->
-        handle_backoff(req_func, times, giveup, err)
+        handle_backoff(req_func, times, giveup, allow_errors, err)
     end
   end
 
-  defp handle_backoff(req_func, times, giveup, err) do
+  defp handle_backoff(req_func, times, giveup, allow_errors, err) do
     Logger.warning("Request failed, waiting and retrying...")
     Logger.error(err)
 
@@ -86,7 +107,7 @@ defmodule CheckerMal.Core.Scraper do
       {:error, "Failed too many times..."}
     else
       :timer.sleep(@error_wait_time)
-      rated_http_recurse(req_func, times + 1, giveup)
+      rated_http_recurse(req_func, times + 1, giveup, allow_errors)
     end
   end
 end

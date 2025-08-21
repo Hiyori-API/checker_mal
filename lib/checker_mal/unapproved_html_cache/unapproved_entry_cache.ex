@@ -5,7 +5,7 @@ defmodule CheckerMal.UnapprovedHtml.EntryCache do
   use GenServer
   require Logger
 
-  @loop_period :timer.seconds(Application.compile_env(:checker_mal, :entrycache_wait, 2))
+  @loop_period :timer.seconds(Application.compile_env(:checker_mal, :entrycache_wait, 5))
   @api_key Application.compile_env(:checker_mal, :mal_api_key)
 
   def start_link(_args) do

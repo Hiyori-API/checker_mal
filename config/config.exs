@@ -47,7 +47,7 @@ config :checker_mal,
   unapproved_check_time: :timer.minutes(5),
   unapproved_html_basepath: "/mal_unapproved",
   unapproved_api_basepath: "/mal_unapproved/api",
-  unapproved_asset_basepath: "/mal_unapproved_assets"
+  unapproved_asset_basepath: "/mal_unapproved"
 
 # random approved MAL id API
 # config :checker_mal,

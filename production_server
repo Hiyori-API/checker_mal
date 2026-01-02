@@ -42,7 +42,7 @@ mix compile
 mix prod.setup
 
 cd ./assets/
-yarn install
-yarn deploy
+npm install --legacy-peer-deps
+npm run deploy
 cd "${THIS_DIR}" || exit $?
 exec mix checker_mal.prod.server
